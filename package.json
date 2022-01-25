@@ -1,0 +1,39 @@
+{
+    "name": "battleship",
+    "version": "1.0.0",
+    "description": "This is a project for The Odin Project curriculum that aims to practice making web apps through Test Driven Development (TDD)",
+    "scripts": {
+        "test": "jest",
+        "test:watch": "jest --watch",
+        "start": "webpack-dev-server --config webpack.dev.js --open",
+        "build": "webpack --config webpack.prod.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/JonPeeAir/battleship.git"
+    },
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/JonPeeAir/battleship/issues"
+    },
+    "homepage": "https://github.com/JonPeeAir/battleship#readme",
+    "devDependencies": {
+        "@babel/core": "^7.16.12",
+        "@babel/preset-env": "^7.16.11",
+        "babel-jest": "^27.4.6",
+        "babel-loader": "^8.2.3",
+        "css-loader": "^6.5.1",
+        "eslint": "^8.7.0",
+        "eslint-config-prettier": "^8.3.0",
+        "eslint-plugin-prettier": "^4.0.0",
+        "html-loader": "^3.1.0",
+        "html-webpack-plugin": "^5.5.0",
+        "jest": "^27.4.7",
+        "style-loader": "^3.3.1",
+        "webpack": "^5.67.0",
+        "webpack-cli": "^4.9.2",
+        "webpack-dev-server": "^4.7.3",
+        "webpack-merge": "^5.8.0"
+    }
+}
