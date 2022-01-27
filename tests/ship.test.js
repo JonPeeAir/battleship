@@ -1,84 +1,104 @@
-import { shipFactory } from "../src/modules/ship";
+import { createShip, isShip } from "../src/modules/ship";
 
 test("shipFactory returns an object", () => {
-    expect(shipFactory(4)).toBeInstanceOf(Object);
+    expect(createShip(4)).toBeInstanceOf(Object);
 });
 
 test("shipFactory returns a ship object", () => {
-    expect(shipFactory(4)).toHaveProperty("length");
-    expect(shipFactory(4)).toHaveProperty("hit");
-    expect(shipFactory(4)).toHaveProperty("hitShip");
-    expect(shipFactory(4)).toHaveProperty("isSunk");
+    const ship = createShip(4);
+
+    // Test instance properties
+    expect(ship).toHaveProperty("length");
+    expect(ship).toHaveProperty("hit");
+    expect(ship).toHaveProperty("orientation");
+
+    // Test if object is set with correct prototype
+    const shipProto = Object.getPrototypeOf(ship);
+    expect(shipProto).toHaveProperty("hitShip");
+    expect(shipProto).toHaveProperty("isSunk");
+    expect(shipProto).toHaveProperty("reset");
+
+    // Also test createShip on the isShip function
+    expect(isShip(ship)).toBe(true);
+});
+
+test("createShip(7) creates a ship with correct length", () => {
+    expect(createShip(7).length).toBe(7);
+});
+
+test("isShip returns true when given a ship", () => {
+    expect(isShip(createShip(4))).toBe(true);
+});
+
+test("isShip returns false when given a non-ship", () => {
+    const nonShip = {
+        length: 4,
+        hit: new Array(4).fill(false),
+        orientation: "h",
+    };
+    expect(isShip(nonShip)).toBe(false);
 });
 
 describe("Ship object related tests", () => {
-    test("Ship.length returns its length", () => {
-        const testShip4 = shipFactory(4);
+    let ship;
 
-        expect(testShip4.length).toBe(4);
+    beforeEach(() => {
+        ship = createShip(4);
+    });
+
+    test("Ship.length returns its length", () => {
+        expect(ship.length).toBe(4);
     });
 
     test("Ship.hit has all values set to false when created", () => {
-        const testShip4 = shipFactory(4);
-
-        expect(testShip4.hit).toMatchObject([false, false, false, false]);
+        expect(ship.hit).toMatchObject([false, false, false, false]);
     });
 
     test("Ship.orientation is set to 'h' by default", () => {
-        const testShip3 = shipFactory(3);
-
-        expect(testShip3.orientation).toBe("h");
+        expect(ship.orientation).toBe("h");
     });
 
     test("Ship.changeOrientation() correctly changes Ship.orientation", () => {
-        const testShip3 = shipFactory(3);
-        expect(testShip3.orientation).toBe("h");
+        expect(ship.orientation).toBe("h");
 
-        testShip3.changeOrientation();
-        expect(testShip3.orientation).toBe("v");
+        ship.changeOrientation();
+        expect(ship.orientation).toBe("v");
 
-        testShip3.changeOrientation();
-        expect(testShip3.orientation).toBe("h");
+        ship.changeOrientation();
+        expect(ship.orientation).toBe("h");
     });
 
     test("Ship.prototype.hitShip() hits the ship at specified index", () => {
-        const testShip4 = shipFactory(4);
-        testShip4.hitShip(2);
-
-        expect(testShip4.hit[2]).toBe(true);
+        ship.hitShip(2);
+        expect(ship.hit[2]).toBe(true);
     });
 
     test("Ship.prototype.hitShip() throws error when attempting to hit ship at invalid index", () => {
-        const testShip4 = shipFactory(4);
-
-        expect(() => testShip4.hitShip(4)).toThrow();
+        // Ship length is 4
+        expect(() => ship.hitShip(4)).toThrow();
+        expect(() => ship.hitShip(-1)).toThrow();
+        expect(() => ship.hitShip()).toThrow();
     });
 
     test("Ship.prototype.isSunk() returns false when ship has not fully sunk", () => {
-        const testShip4 = shipFactory(4);
-
-        expect(testShip4.isSunk()).toBe(false);
+        expect(ship.isSunk()).toBe(false);
     });
 
     test("Ship.prototype.isSunk() returns true when ship has fully sunk", () => {
-        const testShip3 = shipFactory(3);
-        testShip3.hitShip(0);
-        testShip3.hitShip(1);
-        testShip3.hitShip(2);
+        for (let i = 0; i < ship.length; i++) {
+            ship.hitShip(i);
+        }
 
-        expect(testShip3.isSunk()).toBe(true);
+        expect(ship.isSunk()).toBe(true);
     });
 
     test("Ship.prototype.reset() resets the ships hit values all to false", () => {
-        const testShip3 = shipFactory(3);
-        testShip3.hitShip(0);
-        testShip3.hitShip(1);
-        testShip3.hitShip(2);
+        for (let i = 0; i < ship.length; i++) {
+            ship.hitShip(i);
+        }
+        expect(ship.isSunk()).toBe(true);
 
-        expect(testShip3.isSunk()).toBe(true);
-
-        testShip3.reset();
-
-        expect(testShip3.isSunk()).toBe(false);
+        ship.reset();
+        expect(ship.isSunk()).toBe(false);
     });
 });
