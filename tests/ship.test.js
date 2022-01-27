@@ -24,6 +24,23 @@ describe("Ship object related tests", () => {
         expect(testShip4.hit).toMatchObject([false, false, false, false]);
     });
 
+    test("Ship.orientation is set to 'h' by default", () => {
+        const testShip3 = shipFactory(3);
+
+        expect(testShip3.orientation).toBe("h");
+    });
+
+    test("Ship.changeOrientation() correctly changes Ship.orientation", () => {
+        const testShip3 = shipFactory(3);
+        expect(testShip3.orientation).toBe("h");
+
+        testShip3.changeOrientation();
+        expect(testShip3.orientation).toBe("v");
+
+        testShip3.changeOrientation();
+        expect(testShip3.orientation).toBe("h");
+    });
+
     test("Ship.prototype.hitShip() hits the ship at specified index", () => {
         const testShip4 = shipFactory(4);
         testShip4.hitShip(2);
