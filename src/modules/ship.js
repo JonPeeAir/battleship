@@ -37,4 +37,8 @@ function isShip(ship) {
     );
 }
 
+// This allows external modules to import individual functions
 export { createShip, isShip };
+
+// This allows external modules to import all functions as a single object
+export default { createShip, isShip };

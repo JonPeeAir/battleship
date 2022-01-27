@@ -1,11 +1,11 @@
-import { createShip, isShip } from "../src/modules/ship";
+import Ship from "../src/modules/ship";
 
 test("shipFactory returns an object", () => {
-    expect(createShip(4)).toBeInstanceOf(Object);
+    expect(Ship.createShip(4)).toBeInstanceOf(Object);
 });
 
 test("shipFactory returns a ship object", () => {
-    const ship = createShip(4);
+    const ship = Ship.createShip(4);
 
     // Test instance properties
     expect(ship).toHaveProperty("length");
@@ -19,15 +19,15 @@ test("shipFactory returns a ship object", () => {
     expect(shipProto).toHaveProperty("reset");
 
     // Also test createShip on the isShip function
-    expect(isShip(ship)).toBe(true);
+    expect(Ship.isShip(ship)).toBe(true);
 });
 
 test("createShip(7) creates a ship with correct length", () => {
-    expect(createShip(7).length).toBe(7);
+    expect(Ship.createShip(7).length).toBe(7);
 });
 
 test("isShip returns true when given a ship", () => {
-    expect(isShip(createShip(4))).toBe(true);
+    expect(Ship.isShip(Ship.createShip(4))).toBe(true);
 });
 
 test("isShip returns false when given a non-ship", () => {
@@ -36,14 +36,14 @@ test("isShip returns false when given a non-ship", () => {
         hit: new Array(4).fill(false),
         orientation: "h",
     };
-    expect(isShip(nonShip)).toBe(false);
+    expect(Ship.isShip(nonShip)).toBe(false);
 });
 
 describe("Ship object related tests", () => {
     let ship;
 
     beforeEach(() => {
-        ship = createShip(4);
+        ship = Ship.createShip(4);
     });
 
     test("Ship.length returns its length", () => {
