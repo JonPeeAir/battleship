@@ -66,6 +66,9 @@ function createShip(length) {
         },
     });
 
+    // Ensure ship.hit has a fixed length
+    Object.defineProperty(ship.hit, "length", { writable: false });
+
     // Object.freeze ensures that a ship object is a solid object
     // Meaning it cannot be extended or modified
     // Exceptions however include the rules we defined earlier that allows the modification of some aspects of ship

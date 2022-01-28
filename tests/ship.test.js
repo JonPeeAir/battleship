@@ -70,6 +70,10 @@ describe("Ship object related tests", () => {
             expect(() => (ship.hit = [])).toThrow();
         });
 
+        test("Ship.hit has a fixed length", () => {
+            expect(() => (ship.hit[4] = false)).toThrow();
+        });
+
         test("Ship.prototype.hitShip() hits the ship at specified index", () => {
             ship.hitShip(2);
             expect(ship.hit[2]).toBe(true);
