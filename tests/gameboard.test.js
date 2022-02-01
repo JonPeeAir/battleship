@@ -99,8 +99,8 @@ describe("Gameboard object related tests", () => {
                     hit: [false, false, false, false],
                     orientation: "h",
                 },
-                headX: 1,
-                headY: 1,
+                hRow: 1,
+                hCol: 1,
             });
         });
 
@@ -122,13 +122,16 @@ describe("Gameboard object related tests", () => {
             expect(gameboard.ships[0].ship.hit[0]).toBe(false);
         });
 
+        test("Gameboard.prototype.randomize() throws an error if there are no ships to randomize", () => {
+            expect(() => gameboard.randomize()).toThrow();
+        });
+
         test("Gameboard.prototype.hasLost() returns true when all ships have sunk", () => {
-            const ship = createShip(2);
-            gameboard.putShip(ship, 0, 0);
+            gameboard.putShip(createShip(2), 0, 0);
             gameboard.setBoard();
 
             gameboard.receiveAttack(0, 0);
-            gameboard.receiveAttack(1, 0);
+            gameboard.receiveAttack(0, 1);
 
             expect(gameboard.hasLost()).toBe(true);
         });
@@ -190,6 +193,11 @@ describe("Gameboard object related tests", () => {
             expect(gameboard.playArea[1][1]).toBe(true);
         });
 
+        test("Gameboard.prototype.randomize() throws an error when the board is set", () => {
+            gameboard.setBoard();
+            expect(() => gameboard.randomize()).toThrow();
+        });
+
         test("Gameboard.prototype.hasLost() throws an error when the board is not set", () => {
             expect(() => gameboard.hasLost()).toThrow();
             gameboard.setBoard();
@@ -230,41 +238,58 @@ describe("Gameboard object related tests", () => {
         });
 
         test("Gameboard.prototype.putShip() throws an error when passed in coords that interfere with other ships", () => {
-            const ship = createShip(3);
-            gameboard.putShip(ship, 0, 0);
-
-            const ship2 = createShip(3);
-            expect(() => gameboard.putShip(ship2, 1, 0)).toThrow();
+            gameboard.putShip(createShip(3), 0, 0);
+            expect(() => gameboard.putShip(createShip(3), 0, 1)).toThrow();
         });
 
-        test("Gameboard.prototype.moveShip() throws an error when passed in an invalid index", () => {
+        test("Gameboard.prototype.moveShip() throws an error when passed in an invalid ship index", () => {
             expect(() => gameboard.moveShip(0, 0, 0)).toThrow();
         });
 
         test("Gameboard.prototype.moveShip() throws an error when passed in coords that cross outside the board", () => {
             const shipIndex = gameboard.putShip(createShip(3), 0, 0);
-            expect(() => gameboard.moveShip(shipIndex, 8, 0)).toThrow();
+            expect(() => gameboard.moveShip(shipIndex, 0, 8)).toThrow();
         });
 
         test("Gameboard.prototype.moveShip() throws an error when passed in coords that interfere with other ships", () => {
             const ship1 = gameboard.putShip(createShip(3), 0, 0);
-            const ship2 = gameboard.putShip(createShip(3), 0, 1);
-            expect(() => gameboard.moveShip(ship1, 2, 1)).toThrow();
+            const ship2 = gameboard.putShip(createShip(3), 1, 0);
+            expect(() => gameboard.moveShip(ship1, 1, 2)).toThrow();
         });
 
-        test("Gameboard.prototype.rotateShip() throws an error when passed in an invalid index", () => {
+        test("Gameboard.prototype.rotateShip() throws an error when passed in an invalid ship index", () => {
             expect(() => gameboard.rotateShip(0)).toThrow();
         });
 
         test("Gameboard.prototype.rotateShip() throws an error if rotating the ship causes it to cross outside the board", () => {
-            const shipIndex = gameboard.putShip(createShip(3), 0, 9);
+            const shipIndex = gameboard.putShip(createShip(3), 9, 0);
             expect(() => gameboard.rotateShip(shipIndex)).toThrow();
         });
 
         test("Gameboard.prototype.rotateShip() throws an error if rotating the ship interferes with other ships", () => {
             const ship1 = gameboard.putShip(createShip(3), 0, 0);
-            const ship2 = gameboard.putShip(createShip(3), 0, 1);
+            const ship2 = gameboard.putShip(createShip(3), 1, 0);
             expect(() => gameboard.rotateShip(ship1)).toThrow();
+        });
+
+        test("Gameboard.prototype.randomize() randomizes the ships on the board", () => {
+            gameboard.putShip(createShip(2), 0, 0);
+            expect(gameboard.ships[0]).toMatchObject({ hRow: 0, hCol: 0 });
+            gameboard.randomize();
+            expect(gameboard.ships[0]).not.toMatchObject({
+                hRow: 0,
+                hCol: 0,
+            });
+        });
+
+        test("Gameboard.prototype.locateShipsOnBoard() returns a 10x10 array with marked spots of where ships are located", () => {
+            gameboard.putShip(createShip(3), 0, 0);
+            gameboard.setBoard();
+            gameboard.receiveAttack(0, 0);
+            expect(gameboard.locateShipsOnBoard()[0][0]).toBe("X");
+            expect(gameboard.locateShipsOnBoard()[0][1]).toBe("O");
+            expect(gameboard.locateShipsOnBoard()[0][2]).toBe("O");
+            expect(gameboard.locateShipsOnBoard()[0][3]).toBe(" ");
         });
 
         test("Gameboard.prototype.reset() factory resets a gameboard", () => {
