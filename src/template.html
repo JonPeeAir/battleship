@@ -7,6 +7,381 @@
         <title>Battleship</title>
     </head>
     <body>
-        <h1 id="site-title" class="site-title">Battleship</h1>
+        <div class="ship-zone" id="ship-zone">
+            <div class="ship" data-length="4" id="testShip4" draggable="true">
+                <div class="ship-part"></div>
+                <div class="ship-part"></div>
+                <div class="ship-part"></div>
+                <div class="ship-part"></div>
+            </div>
+
+            <div class="ship" data-length="3" id="testShip31" draggable="true">
+                <div class="ship-part"></div>
+                <div class="ship-part"></div>
+                <div class="ship-part"></div>
+            </div>
+
+            <div class="ship" data-length="3" id="testShip32" draggable="true">
+                <div class="ship-part"></div>
+                <div class="ship-part"></div>
+                <div class="ship-part"></div>
+            </div>
+
+            <div class="ship" data-length="2" id="testShip21" draggable="true">
+                <div class="ship-part"></div>
+                <div class="ship-part"></div>
+            </div>
+
+            <div class="ship" data-length="2" id="testShip22" draggable="true">
+                <div class="ship-part"></div>
+                <div class="ship-part"></div>
+            </div>
+
+            <div class="ship" data-length="2" id="testShip23" draggable="true">
+                <div class="ship-part"></div>
+                <div class="ship-part"></div>
+            </div>
+
+            <div class="ship" data-length="1" id="testShip11" draggable="true">
+                <div class="ship-part"></div>
+            </div>
+
+            <div class="ship" data-length="1" id="testShip12" draggable="true">
+                <div class="ship-part"></div>
+            </div>
+
+            <div class="ship" data-length="1" id="testShip13" draggable="true">
+                <div class="ship-part"></div>
+            </div>
+
+            <div class="ship" data-length="1" id="testShip14" draggable="true">
+                <div class="ship-part"></div>
+            </div>
+        </div>
+
+        <table class="gameboard" id="gameboard">
+            <tbody>
+                <tr>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                    <td>
+                        <div class="cell-content"></div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </body>
 </html>
