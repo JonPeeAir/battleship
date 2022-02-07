@@ -94,102 +94,45 @@ describe("Player object related tests", () => {
     });
 
     describe("Player.fleet tests", () => {
-        test("Player.fleet has four length 1 ships by default", () => {
+        test("Player.fleet has four length 1 ships", () => {
             for (let i = 0; i < 4; i++) {
                 expect(p1.fleet[i].length).toBe(1);
             }
         });
 
-        test("Player.fleet has three length 2 ships by default", () => {
+        test("Player.fleet has three length 2 ships", () => {
             for (let i = 0; i < 3; i++) {
                 expect(p1.fleet[i + 4].length).toBe(2);
             }
         });
 
-        test("Player.fleet has two length 3 ships by default", () => {
+        test("Player.fleet has two length 3 ships", () => {
             expect(p1.fleet[7].length).toBe(3);
             expect(p1.fleet[8].length).toBe(3);
         });
 
-        test("Player.fleet has one length 4 ship by default", () => {
+        test("Player.fleet has one length 4 ship", () => {
             expect(p1.fleet[9].length).toBe(4);
         });
 
-        test("Player.prototype.resetFleet deletes all ships in the fleet", () => {
-            expect(p1.fleet.length).toBe(10);
-            p1.resetFleet();
-            expect(p1.fleet.length).toBe(0);
+        test("Player.prototype.hasLost returns false when not all of the ships in the fleet have sunk", () => {
+            expect(p1.hasLost()).toBe(false);
         });
 
-        test("Player.prototype.addShip adds a ship to the fleet", () => {
-            const ship = createShip(3);
-            p1.addShip(ship);
-            expect(p1.fleet[10]).toBe(ship);
-        });
-
-        test("Player.prototype.isReady returns false when some ships in the fleet are not yet placed in the gameboard", () => {
-            expect(p1.isReady()).toBe(false);
-        });
-
-        test("Player.prototype.isReady returns true when all ships in the fleet are placed in the gameboard", () => {
-            // Length 1 ships
+        test("Player.prototype.hasLost returns true when all ships in the fleet have sunk", () => {
             p1.placeShip(0, 0, 0);
             p1.placeShip(1, 0, 2);
             p1.placeShip(2, 0, 4);
             p1.placeShip(3, 0, 6);
 
-            // Length 2 ships
-            p1.placeShip(4, 2, 0);
-            p1.placeShip(5, 2, 3);
-            p1.placeShip(6, 2, 6);
+            p1.placeShip(4, 0, 0);
+            p1.placeShip(5, 0, 0);
+            p1.placeShip(6, 0, 0);
 
-            // Length 3 ships
-            p1.placeShip(7, 4, 0);
-            p1.placeShip(8, 4, 4);
+            p1.placeShip(7, 0, 0);
+            p1.placeShip(8, 0, 0);
 
-            // Length 4 ship
-            p1.placeShip(9, 6, 0);
-
-            expect(p1.isReady()).toBe(true);
-        });
-
-        test("Player.prototype.hasLost throws an error when attempting to call it when player is not ready", () => {
-            expect(p1.isReady()).toBe(false);
-            expect(() => p1.hasLost()).toThrow();
-        });
-
-        test("Player.prototype.hasLost returns false when not all of the ships in the fleet have sunk", () => {
-            // We reset the default fleet to make testing easier
-            p1.resetFleet();
-            p2.resetFleet();
-
-            p1.addShip(createShip(1));
-            p2.addShip(createShip(1));
-
-            p1.placeShip(0, 0, 0);
-            p2.placeShip(0, 0, 0);
-
-            expect(p1.isReady()).toBe(true);
-            expect(p2.isReady()).toBe(true);
-
-            expect(p1.hasLost()).toBe(false);
-        });
-
-        test("Player.prototype.hasLost returns true when all ships in the fleet have sunk", () => {
-            // We reset the default fleet to make testing easier
-            p1.resetFleet();
-            p2.resetFleet();
-
-            p1.addShip(createShip(1));
-            p2.addShip(createShip(1));
-
-            p1.placeShip(0, 0, 0);
-            p2.placeShip(0, 0, 0);
-
-            expect(p1.isReady()).toBe(true);
-            expect(p2.isReady()).toBe(true);
-
-            p2.attack(p1.gameboard, 0, 0);
+            p1.placeShip(9, 0, 0);
 
             expect(p1.hasLost()).toBe(true);
         });
