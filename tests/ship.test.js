@@ -1,4 +1,4 @@
-import Ship from "../src/modules/ship";
+import Ship from "../src/modules/factories/ship";
 
 test("createShip returns an object", () => {
     expect(Ship.createShip(4)).toBeInstanceOf(Object);
@@ -13,7 +13,7 @@ test("createShip returns a ship object", () => {
     expect(ship).toHaveProperty("orientation");
     expect(ship).toHaveProperty("set");
 
-    // Test if object is set with correct prototype
+    // Test prototype properties
     const shipProto = Object.getPrototypeOf(ship);
     expect(shipProto).toHaveProperty("changeOrientation");
     expect(shipProto).toHaveProperty("hitShip");

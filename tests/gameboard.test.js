@@ -1,7 +1,7 @@
-import Gameboard from "../src/modules/gameboard";
+import Gameboard from "../src/modules/factories/gameboard";
 
 // For ship related gameboard methods
-import { createShip } from "../src/modules/ship";
+import { createShip } from "../src/modules/factories/ship";
 
 test("createGameboard returns an object", () => {
     expect(Gameboard.createGameboard()).toBeInstanceOf(Object);
