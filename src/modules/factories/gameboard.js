@@ -82,6 +82,29 @@ const boardProto = (() => {
             this.set = false;
         },
 
+        shipCollidesWithOtherShips(ship, headRow, headCol) {
+            const battleShip = createBattleShip(ship, headRow, headCol);
+            for (let i = 0; i < this.ships.length; i++) {
+                const thisCoords = battleShip.coords;
+                const shipsCoords = this.ships[i].coords;
+                if (intersect(thisCoords, shipsCoords, isEqual).length > 0) {
+                    return true;
+                }
+            }
+            return false;
+        },
+
+        shipCrossesTheBorders(ship, headRow, headCol) {
+            const battleShip = createBattleShip(ship, headRow, headCol);
+            const coords = battleShip.coords;
+            for (let i = 0; i < coords.length; i++) {
+                if (coords[i].some(v => v < 0 || v >= this.size)) {
+                    return true;
+                }
+            }
+            return false;
+        },
+
         putShip(ship, headRow, headColumn) {
             // Initial error checks
             if (this.set)

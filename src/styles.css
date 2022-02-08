@@ -6,23 +6,93 @@
     padding: 0;
 }
 
-body {
-    padding: 2rem;
-    display: flex;
-    gap: 5rem;
+.game-title {
+    text-align: center;
 }
 
-.ship-zone {
-    border: 1px solid black;
-    width: 300px;
-    height: 600px;
-    padding: 1rem;
+.main {
+    /* border: 1px solid black; */
+    padding: 2rem;
 
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    align-items: center;
+    gap: 2rem;
+}
 
+.start-btn {
+    width: fit-content;
+}
+
+.game-content {
+    /* border: 1px solid black; */
+    padding: 2rem;
+    display: flex;
+    /* justify-content: center; */
+    align-items: center;
+    gap: 5rem;
+}
+
+.fleet {
+    /* border: 1px solid black; */
+    padding: 1rem;
+    height: 340px;
+    width: 360px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.fleet-info {
     position: relative;
+    font-size: 1rem;
+    font-weight: normal;
+}
+
+.fleet-info::after {
+    content: "Drag a ship onto the board to place it.\A\AWhen a ship is on the board, click to rotate it";
+    white-space: pre;
+    border-radius: 10px;
+    background-color: rgb(50, 50, 50);
+    color: white;
+    padding: 1rem;
+    font-size: 1rem;
+    font-weight: normal;
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    transform: translate(-47%, -45%) scale(0);
+    transition: transform 0.25s;
+}
+
+.fleet-info::before {
+    content: "";
+    width: 20px;
+    height: 20px;
+    background-color: rgb(50, 50, 50);
+    position: absolute;
+    top: 0px;
+    left: 8px;
+
+    transform: translate(-47%, -50%) rotateZ(45deg) scale(0);
+    transition: transform 0.25s;
+}
+
+.fleet-info:hover::after {
+    transform: translate(-47%, -125%) scale(1);
+}
+
+.fleet-info:hover::before {
+    transform: translate(-47%, -160%) rotateZ(45deg) scale(1);
+}
+
+.ship-category {
+    min-height: 50px;
+
+    display: flex;
+    gap: 1rem;
 }
 
 .ship {
@@ -31,6 +101,7 @@ body {
     border: 1px solid black;
     z-index: 999999999;
     background-color: rgba(0, 0, 0, 0.25);
+    cursor: pointer;
 
     display: flex;
     gap: 3px;
@@ -51,14 +122,37 @@ td {
     width: fit-content;
     height: fit-content;
     border: 1px solid black;
-    position: relative;
 }
 
 .cell-content {
     width: 3rem;
     height: 3rem;
+    position: relative;
 }
 
 .vertical-ship {
     flex-direction: column;
+}
+
+.game-btns {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.random-btn {
+    padding: 0.2rem;
+    font-size: 0.8rem;
+}
+
+.reset-btn {
+    padding: 0.2rem;
+    font-size: 0.8rem;
+}
+
+.start-btn {
+    padding: 0.5rem;
+    font-size: 2.5rem;
 }
