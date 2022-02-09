@@ -64,18 +64,102 @@ function mouseDownHandler(event) {
 
 // To be put on ships
 function dragStartHandler(event) {
-    // const shipData = {
-    //     id: event.target.id,
-    //     length: event.target.dataset.length,
-    // };
+    event.target.classList.remove("ship-error");
     event.dataTransfer.setData("text/plain", event.target.id);
 }
 
 // To be put on ships
 function onClickHandler(event) {
-    const ship = event.target.parentElement;
-    if (ship.parentElement.tagName === "DIV") {
-        ship.classList.toggle("vertical-ship");
+    const shipUI = event.target.classList.contains("ship")
+        ? event.target
+        : event.target.parentElement;
+    const shipID = shipUI.id;
+    const shipLength = Number(shipUI.dataset.length);
+    const headCell = shipUI.parentElement;
+
+    if (!headCell.classList.contains("cell-content")) return;
+
+    const domTable = document.getElementById("gameboard").children[0];
+    const domCells = new Array(domTable.rows.length);
+    for (let i = 0; i < domCells.length; i++) {
+        domCells[i] = new Array(domTable.rows[i].cells.length);
+        for (let j = 0; j < domCells[i].length; j++) {
+            domCells[i][j] = domTable.rows[i].cells[j].firstChild;
+        }
+    }
+
+    // Temporary change in orientation to see if it comes close to other ships
+    shipUI.classList.toggle("vertical-ship");
+    const shipIsVertical = shipUI.classList.contains("vertical-ship");
+
+    const shipIsWithinBorders = shipIsVertical
+        ? headCell.row + shipLength <= BOARD_SIZE
+        : headCell.col + shipLength <= BOARD_SIZE;
+
+    if (!shipIsWithinBorders) {
+        shipUI.classList.toggle("vertical-ship");
+        shipUI.classList.remove("ship-error");
+        setTimeout(() => {
+            shipUI.classList.add("ship-error");
+        }, 100);
+        return;
+    }
+
+    for (let i = 0; i < shipLength; i++) {
+        const row = shipIsVertical ? headCell.row + i : headCell.row;
+        const col = shipIsVertical ? headCell.col : headCell.col + i;
+        const cellContent = domCells[row][col];
+
+        const fillerValue = document.createElement("div");
+        fillerValue.dataset.from = shipID;
+
+        cellContent.appendChild(fillerValue);
+
+        const oldRow = shipIsVertical ? headCell.row : headCell.row + i;
+        const oldCol = shipIsVertical ? headCell.col + i : headCell.col;
+        const oldCellContent = domCells[oldRow][oldCol];
+        const filler = oldCellContent.querySelector(
+            `div[data-from="${shipID}"]`,
+        );
+        filler.remove();
+    }
+
+    const shipSpace = [];
+    getShipSpace(shipUI, headCell).forEach(coord => {
+        shipSpace.push(domCells[coord[0]][coord[1]]);
+    });
+
+    const otherShipFoundInSpace = shipSpace.some(cell => {
+        const filler = cell.querySelector("div[data-from]");
+        return filler !== null && filler.dataset.from !== shipID;
+    });
+
+    if (otherShipFoundInSpace) {
+        shipUI.classList.toggle("vertical-ship");
+        shipUI.classList.remove("ship-error");
+        setTimeout(() => {
+            shipUI.classList.add("ship-error");
+        }, 100);
+        const shipIsVertical = shipUI.classList.contains("vertical-ship");
+
+        for (let i = 0; i < shipLength; i++) {
+            const row = shipIsVertical ? headCell.row + i : headCell.row;
+            const col = shipIsVertical ? headCell.col : headCell.col + i;
+            const cellContent = domCells[row][col];
+
+            const fillerValue = document.createElement("div");
+            fillerValue.dataset.from = shipID;
+
+            cellContent.appendChild(fillerValue);
+
+            const oldRow = shipIsVertical ? headCell.row : headCell.row + i;
+            const oldCol = shipIsVertical ? headCell.col + i : headCell.col;
+            const oldCellContent = domCells[oldRow][oldCol];
+            const filler = oldCellContent.querySelector(
+                `div[data-from="${shipID}"]`,
+            );
+            filler.remove();
+        }
     }
 }
 
@@ -127,7 +211,6 @@ function fleetDrop(event) {
     thisShipCategory.appendChild(shipUI);
 
     if (oldHeadCell) {
-        console.log("fleet there was an old head");
         for (let i = 0; i < shipLength; i++) {
             const oldRow = shipWasVertical
                 ? oldHeadCell.row + i
@@ -135,7 +218,6 @@ function fleetDrop(event) {
             const oldCol = shipWasVertical
                 ? oldHeadCell.col
                 : oldHeadCell.col + i;
-            console.log("there is an old head cell");
             const oldCellContent = domCells[oldRow][oldCol];
             oldCellContent.innerHTML = "";
         }
@@ -158,8 +240,8 @@ function dragOverHandler(event) {
     }
 
     // Get info about the dragged ship
-    const shipId = event.dataTransfer.getData("text/plain");
-    const shipUI = document.getElementById(shipId);
+    const shipID = event.dataTransfer.getData("text/plain");
+    const shipUI = document.getElementById(shipID);
     const shipLength = Number(shipUI.dataset.length);
     const shipIsVertical = shipUI.classList.contains("vertical-ship");
 
@@ -178,15 +260,17 @@ function dragOverHandler(event) {
         ? domCells[thisCell.row - shipPartIndx][thisCell.col]
         : domCells[thisCell.row][thisCell.col - shipPartIndx];
 
-    // const shipSpace = [];
-    // getShipSpace(shipUI, headCell).forEach(coord => {
-    //     shipSpace.push(domCells[coord[0]][coord[1]]);
-    // });
+    const shipSpace = [];
+    getShipSpace(shipUI, headCell).forEach(coord => {
+        shipSpace.push(domCells[coord[0]][coord[1]]);
+    });
 
-    // const otherShipFoundInSpace = shipSpace.some(cell => {
-    //     return cell.firstChild;
-    // });
-    // console.log(otherShipFoundInSpace);
+    const otherShipFoundInSpace = shipSpace.some(cell => {
+        const filler = cell.querySelector("div[data-from]");
+        return filler !== null && filler.dataset.from !== shipID;
+    });
+
+    if (otherShipFoundInSpace) return;
 
     // Change cell background colors based on the ship's head, length, and orientatation
     for (let i = 0; i < shipLength; i++) {
@@ -282,6 +366,14 @@ function dropHandler(event) {
         ? domCells[thisCell.row - shipPartIndx][thisCell.col]
         : domCells[thisCell.row][thisCell.col - shipPartIndx];
 
+    // Remove cell background colors based on the ship's head, length, and orientatation
+    for (let i = 0; i < shipLength; i++) {
+        const row = shipIsVertical ? headCell.row + i : headCell.row;
+        const col = shipIsVertical ? headCell.col : headCell.col + i;
+        const cellContent = domCells[row][col];
+        cellContent.style.backgroundColor = "";
+    }
+
     const shipSpace = [];
     getShipSpace(shipUI, headCell).forEach(coord => {
         shipSpace.push(domCells[coord[0]][coord[1]]);
@@ -292,7 +384,7 @@ function dropHandler(event) {
         return filler !== null && filler.dataset.from !== shipID;
     });
 
-    console.log(otherShipFoundInSpace);
+    if (otherShipFoundInSpace) return;
 
     // change ship position to absolute before dropping
     shipUI.style.position = "absolute";
@@ -302,12 +394,10 @@ function dropHandler(event) {
     // Drop the ship in the head cell
     headCell.appendChild(shipUI);
 
-    // Change cell background colors based on the ship's head, length, and orientatation
     for (let i = 0; i < shipLength; i++) {
         const row = shipIsVertical ? headCell.row + i : headCell.row;
         const col = shipIsVertical ? headCell.col : headCell.col + i;
         const cellContent = domCells[row][col];
-        cellContent.style.backgroundColor = "";
         const fillerValue = document.createElement("div");
         fillerValue.dataset.from = shipID;
         cellContent.appendChild(fillerValue);

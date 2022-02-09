@@ -7,6 +7,7 @@
 }
 
 .game-title {
+    padding: 1rem 0;
     text-align: center;
 }
 
@@ -132,6 +133,19 @@ td {
 
 .vertical-ship {
     flex-direction: column;
+}
+
+.ship-error {
+    animation: red-fade-out 0.35s forwards;
+}
+
+@keyframes red-fade-out {
+    0% {
+        background-color: rgba(255, 0, 0, 0.25);
+    }
+    100% {
+        background-color: rgba(0, 0, 0, 0.25);
+    }
 }
 
 .game-btns {
