@@ -1,327 +1,204 @@
-import ship from "../../factories/ship";
-
-const BOARD_SIZE = 10;
-
-function getShipCoords(ship, headCell) {
-    const shipUICoords = [];
-    const shipLength = Number(ship.dataset.length);
-    const shipIsVertical = ship.classList.contains("vertical-ship");
-
-    for (let i = 0; i < shipLength; i++) {
-        const row = shipIsVertical ? headCell.row + i : headCell.row;
-        const col = shipIsVertical ? headCell.col : headCell.col + i;
-        shipUICoords.push([row, col]);
-    }
-
-    return shipUICoords;
-}
-
-function getShipBoundaryCoords(shipCoords) {
-    const shipBoundaryCoords = [];
-
-    shipCoords.forEach(coord => {
-        for (let row = coord[0] - 1; row < coord[0] + 2; row++) {
-            for (let col = coord[1] - 1; col < coord[1] + 2; col++) {
-                const coordInShipBorder = shipBoundaryCoords.some(shipCoord => {
-                    return shipCoord[0] === row && shipCoord[1] === col;
-                });
-                const coordInShipPart = shipCoords.some(shipCoord => {
-                    return shipCoord[0] === row && shipCoord[1] === col;
-                });
-                const coordIsOutOfBoard =
-                    row < 0 ||
-                    row >= BOARD_SIZE ||
-                    col < 0 ||
-                    col >= BOARD_SIZE;
-
-                if (coordInShipBorder || coordInShipPart || coordIsOutOfBoard) {
-                    continue;
-                }
-
-                shipBoundaryCoords.push([row, col]);
-            }
+// This function extracts all the cells from ".gameboard" and returns it as a 2D array
+function getDomCells() {
+    const gameboardUI = document.getElementById("gameboard");
+    const domCells = new Array(gameboardUI.rows.length);
+    for (let i = 0; i < domCells.length; i++) {
+        domCells[i] = new Array(gameboardUI.rows[i].cells.length);
+        for (let j = 0; j < domCells[i].length; j++) {
+            domCells[i][j] = gameboardUI.rows[i].cells[j].firstChild;
         }
-    });
-
-    return shipBoundaryCoords;
+    }
+    return domCells;
 }
 
-function getShipSpace(ship, headCell) {
-    const shipCoords = getShipCoords(ship, headCell);
-    const shipSpace = shipCoords.concat(getShipBoundaryCoords(shipCoords));
-    return shipSpace;
-}
-
-// This is a global because we are only able to access this once; during its mouse down event
-// And the other functions need to know the dragged ship part index
+// We need this to be global because other event listeners cant access this
 let shipPartIndx;
 
 // To be put on ship parts
 function mouseDownHandler(event) {
-    const ship = event.target.parentElement;
+    const ship = this.parentElement;
     shipPartIndx = Array.from(ship.children).indexOf(event.target);
 }
 
 // To be put on ships
 function dragStartHandler(event) {
-    event.target.classList.remove("ship-error");
+    // If shipPartIndx is undefined for some reason, set it to the middle-most index
+    if (shipPartIndx === undefined)
+        shipPartIndx = Math.floor(this.battleship.ship.length / 2);
+
+    // This ensures the class "ship-error" is not applied before dragging
+    this.classList.remove("ship-error");
+
+    // This is the main purpose of the dragStartHandler
     event.dataTransfer.setData("text/plain", event.target.id);
 }
 
 // To be put on ships
 function onClickHandler(event) {
-    const shipUI = event.target.classList.contains("ship")
-        ? event.target
-        : event.target.parentElement;
-    const shipID = shipUI.id;
-    const shipLength = Number(shipUI.dataset.length);
-    const headCell = shipUI.parentElement;
+    // Get info about clicked ship
+    const shipUI = this;
 
-    if (!headCell.classList.contains("cell-content")) return;
+    // If shipUI's parent is not gameboardUI, you shouldn't rotate it
+    if (!shipUI.parentElement.classList.contains("cell-content")) return;
 
-    const domTable = document.getElementById("gameboard").children[0];
-    const domCells = new Array(domTable.rows.length);
-    for (let i = 0; i < domCells.length; i++) {
-        domCells[i] = new Array(domTable.rows[i].cells.length);
-        for (let j = 0; j < domCells[i].length; j++) {
-            domCells[i][j] = domTable.rows[i].cells[j].firstChild;
-        }
-    }
+    // If shipUI's parent is gameboardUI, get more info about the ship and gameboard
+    const battleship = shipUI.battleship;
+    const gameboard = document.getElementById("gameboard").gameboard;
 
-    // Temporary change in orientation to see if it comes close to other ships
-    shipUI.classList.toggle("vertical-ship");
-    const shipIsVertical = shipUI.classList.contains("vertical-ship");
+    // Attempt to rotate ship in gameboard
+    try {
+        gameboard.rotateShip(battleship);
+    } catch (error) {
+        console.error(error);
 
-    const shipIsWithinBorders = shipIsVertical
-        ? headCell.row + shipLength <= BOARD_SIZE
-        : headCell.col + shipLength <= BOARD_SIZE;
-
-    if (!shipIsWithinBorders) {
-        shipUI.classList.toggle("vertical-ship");
+        // If an error occurs, toggle the error class and return
         shipUI.classList.remove("ship-error");
         setTimeout(() => {
             shipUI.classList.add("ship-error");
         }, 100);
+
         return;
     }
 
-    for (let i = 0; i < shipLength; i++) {
-        const row = shipIsVertical ? headCell.row + i : headCell.row;
-        const col = shipIsVertical ? headCell.col : headCell.col + i;
-        const cellContent = domCells[row][col];
-
-        const fillerValue = document.createElement("div");
-        fillerValue.dataset.from = shipID;
-
-        cellContent.appendChild(fillerValue);
-
-        const oldRow = shipIsVertical ? headCell.row : headCell.row + i;
-        const oldCol = shipIsVertical ? headCell.col + i : headCell.col;
-        const oldCellContent = domCells[oldRow][oldCol];
-        const filler = oldCellContent.querySelector(
-            `div[data-from="${shipID}"]`,
-        );
-        filler.remove();
-    }
-
-    const shipSpace = [];
-    getShipSpace(shipUI, headCell).forEach(coord => {
-        shipSpace.push(domCells[coord[0]][coord[1]]);
-    });
-
-    const otherShipFoundInSpace = shipSpace.some(cell => {
-        const filler = cell.querySelector("div[data-from]");
-        return filler !== null && filler.dataset.from !== shipID;
-    });
-
-    if (otherShipFoundInSpace) {
-        shipUI.classList.toggle("vertical-ship");
-        shipUI.classList.remove("ship-error");
-        setTimeout(() => {
-            shipUI.classList.add("ship-error");
-        }, 100);
-        const shipIsVertical = shipUI.classList.contains("vertical-ship");
-
-        for (let i = 0; i < shipLength; i++) {
-            const row = shipIsVertical ? headCell.row + i : headCell.row;
-            const col = shipIsVertical ? headCell.col : headCell.col + i;
-            const cellContent = domCells[row][col];
-
-            const fillerValue = document.createElement("div");
-            fillerValue.dataset.from = shipID;
-
-            cellContent.appendChild(fillerValue);
-
-            const oldRow = shipIsVertical ? headCell.row : headCell.row + i;
-            const oldCol = shipIsVertical ? headCell.col + i : headCell.col;
-            const oldCellContent = domCells[oldRow][oldCol];
-            const filler = oldCellContent.querySelector(
-                `div[data-from="${shipID}"]`,
-            );
-            filler.remove();
-        }
-    }
+    // If successful, rotate shipUI
+    shipUI.classList.toggle("vertical-ship");
 }
 
 // To be put on the ship zone/fleet
 function fleetDragOver(event) {
     event.preventDefault();
-    const fleet = document.getElementById("fleet");
-    fleet.style.backgroundColor = "rgba(255, 0, 0, 0.25)";
+    this.style.backgroundColor = "rgba(0, 0, 0, 0.10)";
 }
 
 // To be put on the ship zone/fleet
 function fleetDragLeave(event) {
     event.preventDefault();
-    const fleet = document.getElementById("fleet");
-    fleet.style.backgroundColor = "";
+    this.style.backgroundColor = "";
 }
 
 // To be put on the ship zone/fleet
 function fleetDrop(event) {
     event.preventDefault();
 
-    const domTable = document.getElementById("gameboard").children[0];
-    const domCells = new Array(domTable.rows.length);
-    for (let i = 0; i < domCells.length; i++) {
-        domCells[i] = new Array(domTable.rows[i].cells.length);
-        for (let j = 0; j < domCells[i].length; j++) {
-            domCells[i][j] = domTable.rows[i].cells[j].firstChild;
-        }
-    }
-
+    // Get ship details
     const shipID = event.dataTransfer.getData("text/plain");
     const shipUI = document.getElementById(shipID);
-    const shipLength = shipUI.dataset.length;
-    const shipWasVertical = shipUI.classList.contains("vertical-ship");
-    shipUI.style.position = "";
-    shipUI.classList.remove("vertical-ship");
-    const oldHeadCell = shipUI.parentElement.classList.contains("cell-content")
-        ? shipUI.parentElement
-        : undefined;
-    const fleet = document.getElementById("fleet");
-    fleet.style.backgroundColor = "";
+    const battleship = shipUI.battleship;
+    const shipLength = battleship.ship.length;
 
-    const shipCategories = Array.from(
-        document.getElementsByClassName("ship-category"),
-    );
-    const thisShipCategory = shipCategories.find(shipCategory => {
-        return shipCategory.dataset.length === shipLength;
+    // Get gameboard details
+    const gameboardUI = document.getElementById("gameboard");
+    const gameboard = gameboardUI.gameboard;
+
+    // Get fleet container details
+    const fleetUI = this;
+    const thisShipCategory = Array.from(fleetUI.children).find(child => {
+        return Number(child.dataset.length) === shipLength;
     });
-    thisShipCategory.appendChild(shipUI);
 
-    if (oldHeadCell) {
-        for (let i = 0; i < shipLength; i++) {
-            const oldRow = shipWasVertical
-                ? oldHeadCell.row + i
-                : oldHeadCell.row;
-            const oldCol = shipWasVertical
-                ? oldHeadCell.col
-                : oldHeadCell.col + i;
-            const oldCellContent = domCells[oldRow][oldCol];
-            oldCellContent.innerHTML = "";
-        }
-    }
+    // Reset ship styles and data
+    shipUI.classList.remove("vertical-ship");
+    shipUI.style.position = "";
+    battleship.ship.orientation = "h";
+    battleship.hRow = undefined;
+    battleship.hCol = undefined;
+
+    // Remove ship from gameboard
+    gameboard.removeShip(battleship);
+
+    // Change fleet background color back to normal
+    fleetUI.style.backgroundColor = "";
+
+    // Then finally drop the ship in its category
+    thisShipCategory.appendChild(shipUI);
 }
 
 // To be put on cells
 function dragOverHandler(event) {
     event.preventDefault();
 
-    // Store cells in 2D array for easy access
-    // Cells refer to "div.cell-content" and not "td"
-    const domTable = document.getElementById("gameboard").children[0];
-    const domCells = new Array(domTable.rows.length);
-    for (let i = 0; i < domCells.length; i++) {
-        domCells[i] = new Array(domTable.rows[i].cells.length);
-        for (let j = 0; j < domCells[i].length; j++) {
-            domCells[i][j] = domTable.rows[i].cells[j].firstChild;
+    const eventData = event.dataTransfer.getData("text/plain");
+    // Exit early for unwanted events
+    if (eventData.length === 0 || event.target !== this) return;
+
+    // Get ship details
+    const shipUI = document.getElementById(eventData);
+    const battleship = shipUI.battleship;
+    const shipLength = battleship.ship.length;
+    const shipIsVertical = battleship.ship.orientation === "v";
+
+    // Get head cell details // "this" refers to the hovered cell
+    const hRow = shipIsVertical ? this.row - shipPartIndx : this.row;
+    const hCol = shipIsVertical ? this.col : this.col - shipPartIndx;
+
+    // Get gameboard details
+    const domCells = getDomCells();
+    const gameboardUI = document.getElementById("gameboard");
+    const gameboard = gameboardUI.gameboard;
+
+    // Save a reference to the previous head cell coords
+    const prevRow = battleship.hRow;
+    const prevCol = battleship.hCol;
+
+    // Change battleship head cell coords to current head cell coords
+    battleship.hRow = hRow;
+    battleship.hCol = hCol;
+
+    // Then test the validity of its new position
+    const shipPositionIsValid = !(
+        gameboard.shipCrossesTheBorders(battleship) ||
+        gameboard.shipIsTooCloseToOtherShips(battleship)
+    );
+
+    if (shipPositionIsValid) {
+        // Let the user know that the position is valid by changing cell colors to green
+        for (let i = 0; i < shipLength; i++) {
+            const row = shipIsVertical ? hRow + i : hRow;
+            const col = shipIsVertical ? hCol : hCol + i;
+            let cellContent = domCells[row][col];
+            cellContent.style.backgroundColor = "rgba(0, 255, 0, 0.25)";
         }
     }
 
-    // Get info about the dragged ship
-    const shipID = event.dataTransfer.getData("text/plain");
-    const shipUI = document.getElementById(shipID);
-    const shipLength = Number(shipUI.dataset.length);
-    const shipIsVertical = shipUI.classList.contains("vertical-ship");
-
-    // Get info about the hovered cell
-    const thisCell = event.target;
-
-    const shipIsWithinBorders = shipIsVertical
-        ? thisCell.row - shipPartIndx > -1 &&
-          thisCell.row - shipPartIndx + shipLength <= BOARD_SIZE
-        : thisCell.col - shipPartIndx > -1 &&
-          thisCell.col - shipPartIndx + shipLength <= BOARD_SIZE;
-
-    if (!shipIsWithinBorders) return;
-
-    const headCell = shipIsVertical
-        ? domCells[thisCell.row - shipPartIndx][thisCell.col]
-        : domCells[thisCell.row][thisCell.col - shipPartIndx];
-
-    const shipSpace = [];
-    getShipSpace(shipUI, headCell).forEach(coord => {
-        shipSpace.push(domCells[coord[0]][coord[1]]);
-    });
-
-    const otherShipFoundInSpace = shipSpace.some(cell => {
-        const filler = cell.querySelector("div[data-from]");
-        return filler !== null && filler.dataset.from !== shipID;
-    });
-
-    if (otherShipFoundInSpace) return;
-
-    // Change cell background colors based on the ship's head, length, and orientatation
-    for (let i = 0; i < shipLength; i++) {
-        const row = shipIsVertical ? headCell.row + i : headCell.row;
-        const col = shipIsVertical ? headCell.col : headCell.col + i;
-        let cellContent = domCells[row][col];
-        cellContent.style.backgroundColor = "rgba(0, 255, 0, 0.25)";
-    }
+    // Always return the battleship to its previous coords after
+    battleship.hRow = prevRow;
+    battleship.hCol = prevCol;
 }
 
 // To be put on cells
 function dragLeaveHandler(event) {
     event.preventDefault();
-    if (!event.target.classList.contains("cell-content")) return;
 
-    // Store cells in 2D array for easy access
-    // Cells refer to "div.cell-content" and not "td"
-    const domTable = document.getElementById("gameboard").children[0];
-    const domCells = new Array(domTable.rows.length);
-    for (let i = 0; i < domCells.length; i++) {
-        domCells[i] = new Array(domTable.rows[i].cells.length);
-        for (let j = 0; j < domCells[i].length; j++) {
-            domCells[i][j] = domTable.rows[i].cells[j].firstChild;
-        }
-    }
+    const eventData = event.dataTransfer.getData("text/plain");
+    // Exit early for unwanted events
+    if (eventData.length === 0 || event.target !== this) return;
 
-    // Get info about the dragged ship
-    const shipId = event.dataTransfer.getData("text/plain");
-    const shipUI = document.getElementById(shipId);
-    const shipLength = Number(shipUI.dataset.length);
-    const shipIsVertical = shipUI.classList.contains("vertical-ship");
+    // Get ship details
+    const shipID = event.dataTransfer.getData("text/plain");
+    const shipUI = document.getElementById(shipID);
+    const battleship = shipUI.battleship;
+    const shipLength = battleship.ship.length;
+    const shipIsVertical = battleship.ship.orientation === "v";
 
-    // Get info about the hovered cell
-    const thisCell = event.target;
+    // Get head cell details // "this" refers to the hovered cell
+    const hRow = shipIsVertical ? this.row - shipPartIndx : this.row;
+    const hCol = shipIsVertical ? this.col : this.col - shipPartIndx;
 
-    const shipIsWithinBorders = shipIsVertical
-        ? thisCell.row - shipPartIndx > -1 &&
-          thisCell.row - shipPartIndx + shipLength <= BOARD_SIZE
-        : thisCell.col - shipPartIndx > -1 &&
-          thisCell.col - shipPartIndx + shipLength <= BOARD_SIZE;
+    // Get gameboard details
+    const domCells = getDomCells();
+    const gameboardUI = document.getElementById("gameboard");
+    const gameboard = gameboardUI.gameboard;
 
-    if (!shipIsWithinBorders) return;
+    // Exit early if background didn't change at all
+    const headCellIsInvalid = shipIsVertical
+        ? hRow < 0 || hRow + shipLength > gameboard.size
+        : hCol < 0 || hCol + shipLength > gameboard.size;
+    if (headCellIsInvalid) return;
 
-    const headCell = shipIsVertical
-        ? domCells[thisCell.row - shipPartIndx][thisCell.col]
-        : domCells[thisCell.row][thisCell.col - shipPartIndx];
-
-    // Change cell background colors based on the ship's head, length, and orientatation
+    // Remove the drag over background changes
     for (let i = 0; i < shipLength; i++) {
-        const row = shipIsVertical ? headCell.row + i : headCell.row;
-        const col = shipIsVertical ? headCell.col : headCell.col + i;
+        const row = shipIsVertical ? hRow + i : hRow;
+        const col = shipIsVertical ? hCol : hCol + i;
         let cellContent = domCells[row][col];
         cellContent.style.backgroundColor = "";
     }
@@ -331,108 +208,59 @@ function dragLeaveHandler(event) {
 function dropHandler(event) {
     event.preventDefault();
 
-    // Store cells in 2D array for easy access
-    // Cells refer to "div.cell-content" and not "td"
-    const domTable = document.getElementById("gameboard").children[0];
-    const domCells = new Array(domTable.rows.length);
-    for (let i = 0; i < domCells.length; i++) {
-        domCells[i] = new Array(domTable.rows[i].cells.length);
-        for (let j = 0; j < domCells[i].length; j++) {
-            domCells[i][j] = domTable.rows[i].cells[j].firstChild;
-        }
-    }
+    const eventData = event.dataTransfer.getData("text/plain");
+    // Exit early for unwanted events
+    if (eventData.length === 0 || event.target !== this) return;
 
-    // Get info about the dragged ship
+    // Get ship details
     const shipID = event.dataTransfer.getData("text/plain");
     const shipUI = document.getElementById(shipID);
-    const shipLength = Number(shipUI.dataset.length);
-    const shipIsVertical = shipUI.classList.contains("vertical-ship");
+    const battleship = shipUI.battleship;
+    const shipLength = battleship.ship.length;
+    const shipIsVertical = battleship.ship.orientation === "v";
 
-    // Get info about the hovered cell
-    const thisCell = event.target;
-    const oldHeadCell = shipUI.parentElement.classList.contains("cell-content")
-        ? shipUI.parentElement
-        : undefined;
+    // Get head cell details // "this" refers to the hovered cell
+    const hRow = shipIsVertical ? this.row - shipPartIndx : this.row;
+    const hCol = shipIsVertical ? this.col : this.col - shipPartIndx;
 
-    const shipIsWithinBorders = shipIsVertical
-        ? thisCell.row - shipPartIndx > -1 &&
-          thisCell.row - shipPartIndx + shipLength <= BOARD_SIZE
-        : thisCell.col - shipPartIndx > -1 &&
-          thisCell.col - shipPartIndx + shipLength <= BOARD_SIZE;
+    // Get gameboard details
+    const domCells = getDomCells();
+    const gameboardUI = document.getElementById("gameboard");
+    const gameboard = gameboardUI.gameboard;
 
-    if (!shipIsWithinBorders) return;
+    // Try to put/move the battleship in gameboard
+    try {
+        shipUI.battleship = gameboard.moveShip(battleship, hRow, hCol);
+    } catch (error) {
+        console.error("Unable to move ship, attempting to put ship instead");
+        try {
+            shipUI.battleship = gameboard.putShip(battleship.ship, hRow, hCol);
+        } catch (error) {
+            console.error(error);
 
-    const headCell = shipIsVertical
-        ? domCells[thisCell.row - shipPartIndx][thisCell.col]
-        : domCells[thisCell.row][thisCell.col - shipPartIndx];
-
-    // Remove cell background colors based on the ship's head, length, and orientatation
-    for (let i = 0; i < shipLength; i++) {
-        const row = shipIsVertical ? headCell.row + i : headCell.row;
-        const col = shipIsVertical ? headCell.col : headCell.col + i;
-        const cellContent = domCells[row][col];
-        cellContent.style.backgroundColor = "";
+            // If putting/moving didn't work, apply the "ship-error" style
+            shipUI.classList.remove("ship-error");
+            setTimeout(() => {
+                shipUI.classList.add("ship-error");
+            }, 100);
+            return;
+        }
     }
-
-    const shipSpace = [];
-    getShipSpace(shipUI, headCell).forEach(coord => {
-        shipSpace.push(domCells[coord[0]][coord[1]]);
-    });
-
-    const otherShipFoundInSpace = shipSpace.some(cell => {
-        const filler = cell.querySelector("div[data-from]");
-        return filler !== null && filler.dataset.from !== shipID;
-    });
-
-    if (otherShipFoundInSpace) return;
 
     // change ship position to absolute before dropping
     shipUI.style.position = "absolute";
     shipUI.style.top = "0px";
     shipUI.style.left = "0px";
 
-    // Drop the ship in the head cell
-    headCell.appendChild(shipUI);
+    // Drop the shipUI in the head cell
+    domCells[hRow][hCol].appendChild(shipUI);
 
+    // Remove the drag over background changes
     for (let i = 0; i < shipLength; i++) {
-        const row = shipIsVertical ? headCell.row + i : headCell.row;
-        const col = shipIsVertical ? headCell.col : headCell.col + i;
-        const cellContent = domCells[row][col];
-        const fillerValue = document.createElement("div");
-        fillerValue.dataset.from = shipID;
-        cellContent.appendChild(fillerValue);
-
-        if (oldHeadCell) {
-            const oldRow = shipIsVertical
-                ? oldHeadCell.row + i
-                : oldHeadCell.row;
-            const oldCol = shipIsVertical
-                ? oldHeadCell.col
-                : oldHeadCell.col + i;
-            const oldCellContent = domCells[oldRow][oldCol];
-            const filler = oldCellContent.querySelector("div[data-from]");
-            filler.remove();
-        }
-    }
-}
-
-function setupDragAndDrop() {
-    const shipParts = document.getElementsByClassName("ship-part");
-    for (const shipPart of shipParts) {
-        shipPart.addEventListener("mousedown", mouseDownHandler);
-    }
-
-    const ships = document.getElementsByClassName("ship");
-    for (const ship of ships) {
-        ship.addEventListener("dragstart", dragStartHandler);
-        ship.addEventListener("click", onClickHandler);
-    }
-
-    const cells = document.getElementsByClassName("cell-content");
-    for (const cell of cells) {
-        cell.addEventListener("dragover", dragOverHandler);
-        cell.addEventListener("dragleave", dragLeaveHandler);
-        cell.addEventListener("drop", dropHandler);
+        const row = shipIsVertical ? hRow + i : hRow;
+        const col = shipIsVertical ? hCol : hCol + i;
+        let cellContent = domCells[row][col];
+        cellContent.style.backgroundColor = "";
     }
 }
 
@@ -443,7 +271,6 @@ export {
     dragOverHandler,
     dragLeaveHandler,
     dropHandler,
-    setupDragAndDrop,
     fleetDragOver,
     fleetDragLeave,
     fleetDrop,
@@ -456,7 +283,6 @@ export default {
     dragOverHandler,
     dragLeaveHandler,
     dropHandler,
-    setupDragAndDrop,
     fleetDragOver,
     fleetDragLeave,
     fleetDrop,

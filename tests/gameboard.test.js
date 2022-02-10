@@ -20,6 +20,7 @@ test("createGameboard returns a Gameboard object", () => {
     // Test prototype properties
     const gbProto = Object.getPrototypeOf(gameboard);
     expect(gbProto).toHaveProperty("putShip");
+    expect(gbProto).toHaveProperty("removeShip");
     expect(gbProto).toHaveProperty("moveShip");
     expect(gbProto).toHaveProperty("rotateShip");
     expect(gbProto).toHaveProperty("setBoard");
@@ -102,6 +103,26 @@ describe("Gameboard object related tests", () => {
                 hRow: 1,
                 hCol: 1,
             });
+        });
+
+        test("Gameboard.prototype.moveShip() moves a given ship to a specified location", () => {
+            const battleShip = gameboard.putShip(createShip(3), 0, 0);
+            expect(gameboard.ships[0].hRow).toBe(0);
+            expect(gameboard.ships[0].hCol).toBe(0);
+
+            gameboard.moveShip(battleShip, 1, 0);
+
+            expect(gameboard.ships[0].hRow).toBe(1);
+            expect(gameboard.ships[0].hCol).toBe(0);
+        });
+
+        test("Gameboard.prototype.rotateShip() rotates a given ship", () => {
+            const battleShip = gameboard.putShip(createShip(3), 0, 0);
+            expect(gameboard.ships[0].ship.orientation).toBe("h");
+
+            gameboard.rotateShip(battleShip);
+
+            expect(gameboard.ships[0].ship.orientation).toBe("v");
         });
 
         test("Gameboard.prototype.receiveAttack() updates Gameboard.ships if the attack hits", () => {
@@ -237,39 +258,48 @@ describe("Gameboard object related tests", () => {
             expect(() => gameboard.putShip(ship, 10, 10)).toThrow();
         });
 
-        test("Gameboard.prototype.putShip() throws an error when passed in coords that interfere with other ships", () => {
+        test("Gameboard.prototype.putShip() throws an error when passed in coords that are LESS than 1 unit away from other ships", () => {
             gameboard.putShip(createShip(3), 0, 0);
-            expect(() => gameboard.putShip(createShip(3), 0, 1)).toThrow();
+            expect(() => gameboard.putShip(createShip(3), 1, 0)).toThrow();
         });
 
-        test("Gameboard.prototype.moveShip() throws an error when passed in an invalid ship index", () => {
-            expect(() => gameboard.moveShip(0, 0, 0)).toThrow();
+        test("Gameboard.prototype.moveShip() throws an error when passed in a ship that has not been placed on the board", () => {
+            expect(() => gameboard.moveShip(createShip(3), 0, 0)).toThrow();
         });
 
         test("Gameboard.prototype.moveShip() throws an error when passed in coords that cross outside the board", () => {
-            const shipIndex = gameboard.putShip(createShip(3), 0, 0);
-            expect(() => gameboard.moveShip(shipIndex, 0, 8)).toThrow();
+            const battleship1 = gameboard.putShip(createShip(3), 0, 0);
+            expect(() => gameboard.moveShip(battleship1, 0, 8)).toThrow();
+
+            const battleship2 = gameboard.putShip(createShip(3), 2, 0);
+            gameboard.rotateShip(battleship2);
+            expect(() => gameboard.moveShip(battleship2, 8, 0)).toThrow();
         });
 
-        test("Gameboard.prototype.moveShip() throws an error when passed in coords that interfere with other ships", () => {
-            const ship1 = gameboard.putShip(createShip(3), 0, 0);
-            const ship2 = gameboard.putShip(createShip(3), 1, 0);
-            expect(() => gameboard.moveShip(ship1, 1, 2)).toThrow();
+        test("Gameboard.prototype.moveShip() throws an error when passed in coords that are LESS than 1 unit away from other ships", () => {
+            const battleship1 = gameboard.putShip(createShip(3), 0, 0);
+            const battleship2 = gameboard.putShip(createShip(3), 2, 0);
+            expect(() => gameboard.moveShip(battleship1, 1, 0)).toThrow();
         });
 
-        test("Gameboard.prototype.rotateShip() throws an error when passed in an invalid ship index", () => {
-            expect(() => gameboard.rotateShip(0)).toThrow();
+        test("Gameboard.prototype.rotateShip() throws an error when passed in a ship that has not been placed on the board", () => {
+            expect(() => gameboard.rotateShip(createShip(3))).toThrow();
         });
 
         test("Gameboard.prototype.rotateShip() throws an error if rotating the ship causes it to cross outside the board", () => {
-            const shipIndex = gameboard.putShip(createShip(3), 9, 0);
-            expect(() => gameboard.rotateShip(shipIndex)).toThrow();
+            const battleship1 = gameboard.putShip(createShip(3), 9, 0);
+            expect(() => gameboard.rotateShip(battleship1)).toThrow();
+
+            const battleship2 = gameboard.putShip(createShip(3), 0, 0);
+            gameboard.rotateShip(battleship2);
+            gameboard.moveShip(battleship2, 0, 9);
+            expect(() => gameboard.rotateShip(battleship2)).toThrow();
         });
 
         test("Gameboard.prototype.rotateShip() throws an error if rotating the ship interferes with other ships", () => {
-            const ship1 = gameboard.putShip(createShip(3), 0, 0);
-            const ship2 = gameboard.putShip(createShip(3), 1, 0);
-            expect(() => gameboard.rotateShip(ship1)).toThrow();
+            const battleship1 = gameboard.putShip(createShip(3), 0, 0);
+            const battleship2 = gameboard.putShip(createShip(2), 2, 0);
+            expect(() => gameboard.rotateShip(battleship1)).toThrow();
         });
 
         test("Gameboard.prototype.randomize() randomizes the ships on the board", () => {
@@ -297,7 +327,7 @@ describe("Gameboard object related tests", () => {
             const ship = createShip(3);
             const ship2 = createShip(4);
             gameboard.putShip(ship, 0, 0);
-            gameboard.putShip(ship2, 1, 1);
+            gameboard.putShip(ship2, 2, 1);
             gameboard.setBoard();
             gameboard.receiveAttack(0, 0);
 

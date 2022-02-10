@@ -89,7 +89,7 @@
     transform: translate(-47%, -160%) rotateZ(45deg) scale(1);
 }
 
-.ship-category {
+.ship-group {
     min-height: 50px;
 
     display: flex;

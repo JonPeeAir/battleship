@@ -1,6 +1,8 @@
-import { intersectionWith as intersect, isEqual, findIndex } from "lodash";
 import events from "events";
 import { isShip } from "./ship";
+
+// Edit this if you want to change overall gameboard size
+const BOARD_SIZE = 10;
 
 const battleShipProto = {
     get coords() {
@@ -13,6 +15,26 @@ const battleShipProto = {
             }
         }
         return coords;
+    },
+
+    get areaCoords() {
+        const areaCoords = new Set();
+        this.coords.forEach(coord => {
+            for (let row = coord[0] - 1; row < coord[0] + 2; row++) {
+                for (let col = coord[1] - 1; col < coord[1] + 2; col++) {
+                    if (
+                        row < 0 ||
+                        row >= BOARD_SIZE ||
+                        col < 0 ||
+                        col >= BOARD_SIZE
+                    ) {
+                        continue;
+                    }
+                    areaCoords.add(JSON.stringify([row, col]));
+                }
+            }
+        });
+        return Array.from(areaCoords).map(coord => JSON.parse(coord));
     },
 };
 
@@ -33,40 +55,18 @@ const boardProto = (() => {
     }
 
     // Private helper method
-    function shipCollidesWithOtherShips(battleShip) {
-        for (let i = 0; i < this.ships.length; i++) {
-            const thisCoords = battleShip.coords;
-            const shipsCoords = this.ships[i].coords;
-            if (intersect(thisCoords, shipsCoords, isEqual).length > 0) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    // Private helper method
-    function shipCrossesTheBorders(battleShip) {
-        const coords = battleShip.coords;
-        for (let i = 0; i < coords.length; i++) {
-            if (coords[i].some(v => v < 0 || v >= this.size)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    // Private helper method
     function updateShips(row, col) {
-        this.ships.forEach(battleShip => {
-            const attackHits = battleShip.coords.some(v =>
-                isEqual(v, [row, col]),
-            );
-            const hitIndex = findIndex(battleShip.coords, item =>
-                isEqual(item, [row, col]),
-            );
+        this.ships.forEach(ship => {
+            const attackHits = ship.coords.some(coord => {
+                return coord.toString() === [row, col].toString();
+            });
+
+            const hitIndex = ship.coords.findIndex(coord => {
+                return coord.toString() === [row, col].toString();
+            });
 
             if (attackHits) {
-                battleShip.ship.hitShip(hitIndex);
+                ship.ship.hitShip(hitIndex);
                 // Then alert subscribers of a ship update if the attack hits
                 this.event.emit("shipUpdate");
             }
@@ -82,27 +82,44 @@ const boardProto = (() => {
             this.set = false;
         },
 
-        shipCollidesWithOtherShips(ship, headRow, headCol) {
-            const battleShip = createBattleShip(ship, headRow, headCol);
-            for (let i = 0; i < this.ships.length; i++) {
-                const thisCoords = battleShip.coords;
-                const shipsCoords = this.ships[i].coords;
-                if (intersect(thisCoords, shipsCoords, isEqual).length > 0) {
+        shipCrossesTheBorders(battleship) {
+            const coords = battleship.coords;
+            for (let i = 0; i < coords.length; i++) {
+                if (coords[i].some(c => c < 0 || c >= this.size)) {
                     return true;
                 }
             }
             return false;
         },
 
-        shipCrossesTheBorders(ship, headRow, headCol) {
-            const battleShip = createBattleShip(ship, headRow, headCol);
-            const coords = battleShip.coords;
-            for (let i = 0; i < coords.length; i++) {
-                if (coords[i].some(v => v < 0 || v >= this.size)) {
-                    return true;
+        shipIsTooCloseToOtherShips(battleship) {
+            const shipUsedToBeOnBoard = this.containsShip(battleship);
+            if (shipUsedToBeOnBoard) this.removeShip(battleship);
+
+            const thisAreaCoords = battleship.areaCoords;
+            for (let i = 0; i < this.ships.length; i++) {
+                const otherShipCoords = this.ships[i].coords;
+                for (let j = 0; j < otherShipCoords.length; j++) {
+                    if (
+                        thisAreaCoords.some(areaCoord => {
+                            return (
+                                areaCoord.toString() ===
+                                otherShipCoords[j].toString()
+                            );
+                        })
+                    ) {
+                        if (shipUsedToBeOnBoard) this.ships.push(battleship);
+                        return true;
+                    }
                 }
             }
+
+            if (shipUsedToBeOnBoard) this.ships.push(battleship);
             return false;
+        },
+
+        containsShip(battleship) {
+            return this.ships.some(ship => ship === battleship);
         },
 
         putShip(ship, headRow, headColumn) {
@@ -117,8 +134,8 @@ const boardProto = (() => {
 
             // Check if ship position is valid
             if (
-                shipCrossesTheBorders.call(this, battleShip) ||
-                shipCollidesWithOtherShips.call(this, battleShip)
+                this.shipCrossesTheBorders(battleShip) ||
+                this.shipIsTooCloseToOtherShips(battleShip)
             ) {
                 throw new Error("Ship position is invalid, unable to put ship");
             }
@@ -126,85 +143,84 @@ const boardProto = (() => {
             // Push the battleShip if no errors were thrown
             this.ships.push(battleShip);
 
-            // Return ship index if putting battleShip was successful
-            return this.ships.length - 1;
+            // Return battleship if putting ship was successful
+            return battleShip;
         },
 
-        moveShip(shipIndex, headRow, headColumn) {
+        removeShip(battleShip) {
+            const battleShipIndex = this.ships.findIndex(
+                otherBattleShip => battleShip === otherBattleShip,
+            );
+            if (battleShipIndex > -1) {
+                return this.ships.splice(battleShipIndex, 1)[0];
+            }
+            return undefined;
+        },
+
+        moveShip(battleShip, headRow, headColumn) {
             // Initial error checks
             if (this.set)
                 throw new Error("Cannot move ship when the board is set");
-            if (shipIndex < 0 || shipIndex >= this.ships.length)
+            if (this.ships.every(ship => ship !== battleShip)) {
                 throw new Error(
-                    `Ship at index [${shipIndex}] does not exist, unable to move ship`,
+                    `You must put this ship in the board first before moving it`,
                 );
-
-            // Remove ship from Gameboard.ships and store into battleShip
-            const battleShip = this.ships.splice(shipIndex, 1)[0];
+            }
 
             // Save a reference to the current head coords
             const prevRow = battleShip.hRow;
             const prevCol = battleShip.hCol;
 
-            // Update the ship with the new head coords
+            // Attempt to move ship to new head coords
             battleShip.hRow = headRow;
             battleShip.hCol = headColumn;
 
             // Check if new ship position is valid
             if (
-                shipCrossesTheBorders.call(this, battleShip) ||
-                shipCollidesWithOtherShips.call(this, battleShip)
+                this.shipCrossesTheBorders(battleShip) ||
+                this.shipIsTooCloseToOtherShips(battleShip)
             ) {
                 // If new coords not valid, revert back to old coords
                 battleShip.hRow = prevRow;
                 battleShip.hCol = prevCol;
 
-                // And put the battleShip back in the array
-                this.ships.splice(shipIndex, 0, battleShip);
-
-                throw new Error("Ship position is invalid, unable to put ship");
+                // Then throw error
+                const errMsg = "Ship position is invalid, unable to move ship";
+                throw new Error(errMsg);
             }
 
-            // If no errors were thrown, we can safely put battleship back with new coords into array
-            this.ships.splice(shipIndex, 0, battleShip);
-
-            // And return ship index if moving the ship was successful
-            return shipIndex;
+            // Return ship index if moving the ship was successful
+            return battleShip;
         },
 
-        rotateShip(shipIndex) {
+        rotateShip(battleShip) {
             // Initial error checks
             if (this.set)
                 throw new Error("Cannot rotate ship when the board is set");
-            if (shipIndex < 0 || shipIndex >= this.ships.length)
-                throw new Error(
-                    `Ship at index [${shipIndex}] does not exist, unable to rotate ship`,
-                );
 
-            // Remove the ship from Gamboard.ships and store into battleShip
-            const battleShip = this.ships.splice(shipIndex, 1)[0];
+            if (this.ships.every(ship => ship !== battleShip))
+                throw new Error(
+                    `You must put this ship in the board first before rotating it`,
+                );
 
             // Attempt to rotate Ship
             battleShip.ship.changeOrientation();
 
             // Check if new ship position is valid
             if (
-                shipCrossesTheBorders.call(this, battleShip) ||
-                shipCollidesWithOtherShips.call(this, battleShip)
+                this.shipCrossesTheBorders(battleShip) ||
+                this.shipIsTooCloseToOtherShips(battleShip)
             ) {
                 // If rotation is not valid, go back to its previous orientation
                 battleShip.ship.changeOrientation();
-                // Then put it back in the array
-                this.ships.splice(shipIndex, 0, battleShip);
 
-                throw new Error("Ship position is invalid, unable to put ship");
+                // Then throw error
+                const errMsg = "Ship position is invalid, unable to move ship";
+                throw new Error(errMsg);
             }
 
-            // If no errors were thrown, we can safely put rotated battleShip back into array
-            this.ships.splice(shipIndex, 0, battleShip);
-
             // Return ship index if rotating the ship was successful
-            return shipIndex;
+            return battleShip;
         },
 
         receiveAttack(row, col) {
@@ -238,10 +254,11 @@ const boardProto = (() => {
             for (let i = 0; i < this.ships.length; i++) {
                 while (true) {
                     try {
+                        const ship = this.ships[i];
                         // Move ship to random location
-                        this.moveShip(i, randFrom(0, 9), randFrom(0, 9));
+                        this.moveShip(ship, randFrom(0, 9), randFrom(0, 9));
                         // With a 50% chance, change ship orientation
-                        if (randFrom(0, 1)) this.rotateShip(i);
+                        if (randFrom(0, 1)) this.rotateShip(ship);
                     } catch (e) {
                         continue;
                     }
@@ -338,7 +355,7 @@ const boardProto = (() => {
 })();
 
 function createGameboard() {
-    const size = 10;
+    const size = BOARD_SIZE;
     let playArea = new Array(size);
     for (let i = 0; i < playArea.length; i++) {
         playArea[i] = new Array(size).fill(false);
@@ -384,7 +401,7 @@ function isGameboard(gameboard) {
 }
 
 // This allows external modules to import individual functions
-export { createGameboard, isGameboard };
+export { createGameboard, createBattleShip, isGameboard };
 
 // This allows external modules to import all functions as a single object
-export default { createGameboard, isGameboard };
+export default { createGameboard, createBattleShip, isGameboard };

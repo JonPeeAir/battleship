@@ -1,21 +1,30 @@
+// Module imports
 import Drag from "../../utils/drag";
 
 function createGameboardUI(gameboard) {
+    // Create gameboardUI
     const gameboardUI = document.createElement("table");
     gameboardUI.id = "gameboard";
     gameboardUI.classList.add("gameboard");
+    // Attach gameboard object to gameboardUI
+    gameboardUI.gameboard = gameboard;
 
+    // Create table body for gameboard
     const tbody = document.createElement("tbody");
     for (let i = 0; i < gameboard.size; i++) {
+        // Create row that will hold cells
         const row = document.createElement("tr");
-
         for (let j = 0; j < gameboard.size; j++) {
+            // Create cell
             const cell = document.createElement("td");
 
+            // Create cell content
             const cellContent = document.createElement("div");
+            cellContent.classList.add("cell-content");
+            // Make cell content aware of its position in the board
             cellContent.row = i;
             cellContent.col = j;
-            cellContent.classList.add("cell-content");
+            // Attach cell content event listeners
             cellContent.addEventListener("dragover", Drag.dragOverHandler);
             cellContent.addEventListener("dragleave", Drag.dragLeaveHandler);
             cellContent.addEventListener("drop", Drag.dropHandler);
@@ -23,10 +32,8 @@ function createGameboardUI(gameboard) {
             cell.appendChild(cellContent);
             row.appendChild(cell);
         }
-
         tbody.appendChild(row);
     }
-
     gameboardUI.appendChild(tbody);
 
     return gameboardUI;
