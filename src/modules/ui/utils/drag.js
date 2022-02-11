@@ -140,29 +140,27 @@ function dragOverHandler(event) {
     const prevRow = battleship.hRow;
     const prevCol = battleship.hCol;
 
-    // Change battleship head cell coords to current head cell coords
+    // Change battleship head cell coords to new head cell coords
     battleship.hRow = hRow;
     battleship.hCol = hCol;
 
-    // Then test the validity of its new position
-    const shipPositionIsValid = !(
-        gameboard.shipCrossesTheBorders(battleship) ||
-        gameboard.shipIsTooCloseToOtherShips(battleship)
-    );
-
-    if (shipPositionIsValid) {
-        // Let the user know that the position is valid by changing cell colors to green
+    // Test the validity of the new position
+    try {
+        gameboard.checkPlacementOf(battleship);
+        // The code below won't execute if the code above throws an error
         for (let i = 0; i < shipLength; i++) {
             const row = shipIsVertical ? hRow + i : hRow;
             const col = shipIsVertical ? hCol : hCol + i;
             let cellContent = domCells[row][col];
             cellContent.style.backgroundColor = "rgba(0, 255, 0, 0.25)";
         }
+    } catch (error) {
+        return;
+    } finally {
+        // Always return the battleship to its previous coords after
+        battleship.hRow = prevRow;
+        battleship.hCol = prevCol;
     }
-
-    // Always return the battleship to its previous coords after
-    battleship.hRow = prevRow;
-    battleship.hCol = prevCol;
 }
 
 // To be put on cells
