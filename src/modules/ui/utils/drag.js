@@ -119,7 +119,7 @@ function dragOverHandler(event) {
 
     const eventData = event.dataTransfer.getData("text/plain");
     // Exit early for unwanted events
-    if (eventData.length === 0 || event.target !== this) return;
+    if (eventData.match(/ship/) === null || event.target !== this) return;
 
     // Get ship details
     const shipUI = document.getElementById(eventData);
@@ -169,7 +169,7 @@ function dragLeaveHandler(event) {
 
     const eventData = event.dataTransfer.getData("text/plain");
     // Exit early for unwanted events
-    if (eventData.length === 0 || event.target !== this) return;
+    if (eventData.match(/ship/) === null || event.target !== this) return;
 
     // Get ship details
     const shipID = event.dataTransfer.getData("text/plain");
@@ -208,7 +208,7 @@ function dropHandler(event) {
 
     const eventData = event.dataTransfer.getData("text/plain");
     // Exit early for unwanted events
-    if (eventData.length === 0 || event.target !== this) return;
+    if (eventData.match(/ship/) === null || event.target !== this) return;
 
     // Get ship details
     const shipID = event.dataTransfer.getData("text/plain");
