@@ -59,6 +59,15 @@ function createBattleShip(ship, headRow, headColumn) {
 
 const boardProto = (() => {
     // Private helper method
+    function timeoutPromise(delay) {
+        return new Promise((resolve, reject) => {
+            setTimeout(function () {
+                resolve("Timeout!");
+            }, delay);
+        });
+    }
+
+    // Private helper method
     function randFrom(min, max) {
         min = Math.ceil(min);
         max = Math.floor(max);
@@ -264,26 +273,56 @@ const boardProto = (() => {
             updateShips.call(this, row, col);
         },
 
-        randomize() {
+        randomize(ships = []) {
             // Error checks
             if (this.set)
                 throw new Error("Cannot randomize ships when the board is set");
-            if (this.ships.length === 0)
+            if (ships.length === 0 && this.ships.length === 0)
                 throw new Error(
                     "Randomize has no effect, consider adding some ships",
                 );
 
-            for (let i = 0; i < this.ships.length; i++) {
-                while (true) {
-                    try {
-                        const ship = this.ships[i];
-                        // Move ship to random location
-                        this.moveShip(ship, randFrom(0, 9), randFrom(0, 9));
-                        // With a 50% chance, change ship orientation
-                        if (randFrom(0, 1)) this.rotateShip(ship);
-                    } catch (e) {
-                        continue;
+            // Combine 'ships' with ships on board
+            const allShips = ships.concat(this.ships.map(s => s.ship));
+
+            // Remove all ships on board
+            this.reset();
+
+            while (true) {
+                const startTime = new Date();
+
+                allShips.forEach(ship => {
+                    while (true) {
+                        // If the loop is taking too long, exit the loop
+                        const timeNow = new Date();
+                        if (timeNow - startTime >= 250) {
+                            break;
+                        }
+
+                        let battleship;
+                        try {
+                            // Put ship on random location
+                            battleship = this.putShip(
+                                ship,
+                                randFrom(0, 9),
+                                randFrom(0, 9),
+                            );
+                            // With a 50% chance, change ship orientation
+                            if (randFrom(0, 1)) this.rotateShip(battleship);
+                        } catch (e) {
+                            this.removeShip(battleship);
+                            continue;
+                        }
+                        break;
                     }
+                });
+
+                // If the forEach loop was taking too long, restart the whole randomize process again
+                const timeNow = new Date();
+                if (timeNow - startTime >= 250) {
+                    this.reset();
+                    continue;
+                } else {
                     break;
                 }
             }

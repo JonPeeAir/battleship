@@ -156,6 +156,11 @@ td {
     gap: 0.5rem;
 }
 
+.setup-btns {
+    display: flex;
+    gap: 0.5rem;
+}
+
 .random-btn {
     padding: 0.2rem;
     font-size: 0.8rem;

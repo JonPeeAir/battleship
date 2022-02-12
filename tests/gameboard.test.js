@@ -329,18 +329,31 @@ describe("Gameboard prototype tests", () => {
         });
     });
 
-    describe("Gameboard.prototyp.randomize", () => {
+    describe("Gameboard.prototype.randomize", () => {
         test("randomizes the ships on the board", () => {
-            gameboard.putShip(createShip(2), 0, 0);
-            expect(gameboard.ships[0]).toMatchObject({ hRow: 0, hCol: 0 });
+            const battleship = gameboard.putShip(createShip(3), 0, 0);
+            expect(gameboard.ships[0]).toBe(battleship);
             gameboard.randomize();
-            expect(gameboard.ships[0]).not.toMatchObject({
-                hRow: 0,
-                hCol: 0,
-            });
+            expect(gameboard.ships[0]).not.toBe(battleship);
         });
 
-        test("throws an error if there are no ships to randomize", () => {
+        test("if given an optional parameter array 'ships', randomizes the ships on board including added ships", () => {
+            const battleship = gameboard.putShip(createShip(3), 0, 0);
+            expect(gameboard.ships[0]).toBe(battleship);
+            expect(gameboard.ships.length).toBe(1);
+            gameboard.randomize([createShip(3), createShip(3)]);
+            expect(gameboard.ships[0]).not.toBe(battleship);
+            expect(gameboard.ships.length).toBe(3);
+        });
+
+        test("if there are no ships on board but an array of ships was given, randomly place these ships on the board", () => {
+            expect(gameboard.ships.length).toBe(0);
+            const ships = [createShip(1), createShip(2), createShip(3)];
+            gameboard.randomize(ships);
+            expect(gameboard.ships.length).toBe(3);
+        });
+
+        test("throws an error if there are no ships to randomize and no optional 'ships' array was given", () => {
             expect(() => gameboard.randomize()).toThrow();
         });
 
