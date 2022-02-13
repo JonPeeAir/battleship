@@ -1,6 +1,18 @@
 // Module imports
 import Drag from "../../utils/drag";
 
+function getDomCells() {
+    const gameboardUI = document.getElementById("gameboard");
+    const domCells = new Array(gameboardUI.rows.length);
+    for (let i = 0; i < domCells.length; i++) {
+        domCells[i] = new Array(gameboardUI.rows[i].cells.length);
+        for (let j = 0; j < domCells[i].length; j++) {
+            domCells[i][j] = gameboardUI.rows[i].cells[j].firstChild;
+        }
+    }
+    return domCells;
+}
+
 function createGameboardUI(gameboard) {
     // Create gameboardUI
     const gameboardUI = document.createElement("table");
@@ -39,5 +51,5 @@ function createGameboardUI(gameboard) {
     return gameboardUI;
 }
 
-export { createGameboardUI };
-export default { createGameboardUI };
+export { createGameboardUI, getDomCells };
+export default { createGameboardUI, getDomCells };

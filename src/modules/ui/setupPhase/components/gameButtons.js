@@ -43,6 +43,14 @@ function randomizeShips(event) {
     });
 
     setTimeout(() => (event.target.disabled = false), 0);
+
+    const fleetUI = document.getElementById("fleet");
+    const startBtn = document.getElementById("start-btn");
+    if (fleetUI.querySelectorAll(".ship").length > 0) {
+        startBtn.dispatchEvent(new Event("boardIsNotSet"));
+    } else {
+        startBtn.dispatchEvent(new Event("boardIsSet"));
+    }
 }
 
 function resetShips(event) {
@@ -68,6 +76,14 @@ function resetShips(event) {
 
         thisGroup.appendChild(shipUI);
     });
+
+    const fleetUI = document.getElementById("fleet");
+    const startBtn = document.getElementById("start-btn");
+    if (fleetUI.querySelectorAll(".ship").length > 0) {
+        startBtn.dispatchEvent(new Event("boardIsNotSet"));
+    } else {
+        startBtn.dispatchEvent(new Event("boardIsSet"));
+    }
 }
 
 function createGameButtons() {
@@ -98,6 +114,13 @@ function createGameButtons() {
     startBtn.classList.add("start-btn");
     startBtn.disabled = true;
     startBtn.textContent = "START GAME";
+    startBtn.addEventListener("boardIsSet", () => {
+        startBtn.disabled = false;
+    });
+
+    startBtn.addEventListener("boardIsNotSet", () => {
+        startBtn.disabled = true;
+    });
 
     gameBtns.append(setupBtns, startBtn);
     return gameBtns;

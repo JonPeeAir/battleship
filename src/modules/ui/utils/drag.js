@@ -1,15 +1,4 @@
-// This function extracts all the cells from ".gameboard" and returns it as a 2D array
-function getDomCells() {
-    const gameboardUI = document.getElementById("gameboard");
-    const domCells = new Array(gameboardUI.rows.length);
-    for (let i = 0; i < domCells.length; i++) {
-        domCells[i] = new Array(gameboardUI.rows[i].cells.length);
-        for (let j = 0; j < domCells[i].length; j++) {
-            domCells[i][j] = gameboardUI.rows[i].cells[j].firstChild;
-        }
-    }
-    return domCells;
-}
+import { getDomCells } from "../setupPhase/components/gameboardUI";
 
 // We need this to be global because other event listeners cant access this
 let shipPartIndx;
@@ -111,6 +100,11 @@ function fleetDrop(event) {
 
     // Then finally drop the ship in its category
     thisShipCategory.appendChild(shipUI);
+
+    const startBtn = document.getElementById("start-btn");
+    if (fleetUI.querySelectorAll(".ship").length > 0) {
+        startBtn.dispatchEvent(new Event("boardIsNotSet"));
+    }
 }
 
 // To be put on cells
@@ -259,6 +253,14 @@ function dropHandler(event) {
         const col = shipIsVertical ? hCol : hCol + i;
         let cellContent = domCells[row][col];
         cellContent.style.backgroundColor = "";
+    }
+
+    const fleetUI = document.getElementById("fleet");
+    const startBtn = document.getElementById("start-btn");
+    if (fleetUI.querySelectorAll(".ship").length > 0) {
+        startBtn.dispatchEvent(new Event("boardIsNotSet"));
+    } else {
+        startBtn.dispatchEvent(new Event("boardIsSet"));
     }
 }
 
