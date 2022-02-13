@@ -15,11 +15,57 @@ function dragStartHandler(event) {
     if (shipPartIndx === undefined)
         shipPartIndx = Math.floor(this.battleship.ship.length / 2);
 
-    // This ensures the class "ship-error" is not applied before dragging
-    this.classList.remove("ship-error");
+    // This highlights the restricted areas in the board
+    const gameboardUI = document.getElementById("gameboard");
+    const domCells = getDomCells();
+    const shipUIsOnBoard = Array.from(gameboardUI.querySelectorAll(".ship"));
+    shipUIsOnBoard.forEach(shipUI => {
+        // Do not highlight this ship's restricted areas
+        if (shipUI === this) return;
+
+        const shipCoords = shipUI.battleship.coords;
+        const shipAreaCoords = shipUI.battleship.areaCoords;
+        const shipBorderCoords = shipAreaCoords.filter(coord => {
+            return shipCoords.every(shipCoord => {
+                return shipCoord.toString() !== coord.toString();
+            });
+        });
+
+        shipBorderCoords.forEach(coord => {
+            const row = coord[0];
+            const col = coord[1];
+            const borderCell = domCells[row][col];
+            borderCell.style.backgroundColor = "rgba(255, 0, 0, 0.25)";
+        });
+    });
 
     // This is the main purpose of the dragStartHandler
     event.dataTransfer.setData("text/plain", event.target.id);
+}
+
+function dragEndHandler(event) {
+    event.preventDefault();
+
+    // This removes the highlighted restricted areas in the board
+    const gameboardUI = document.getElementById("gameboard");
+    const domCells = getDomCells();
+    const shipUIsOnBoard = Array.from(gameboardUI.querySelectorAll(".ship"));
+    shipUIsOnBoard.forEach(shipUI => {
+        const shipCoords = shipUI.battleship.coords;
+        const shipAreaCoords = shipUI.battleship.areaCoords;
+        const shipBorderCoords = shipAreaCoords.filter(coord => {
+            return shipCoords.every(shipCoord => {
+                return shipCoord.toString() !== coord.toString();
+            });
+        });
+
+        shipBorderCoords.forEach(coord => {
+            const row = coord[0];
+            const col = coord[1];
+            const borderCell = domCells[row][col];
+            borderCell.style.backgroundColor = "";
+        });
+    });
 }
 
 // To be put on ships
@@ -51,6 +97,9 @@ function onClickHandler(event) {
 
     // If successful, rotate shipUI
     shipUI.classList.toggle("vertical-ship");
+
+    // and remove the "ship-error" class if it was ever applied
+    shipUI.classList.remove("ship-error");
 }
 
 // To be put on the ship zone/fleet
@@ -87,6 +136,7 @@ function fleetDrop(event) {
 
     // Reset ship styles and data
     shipUI.classList.remove("vertical-ship");
+    shipUI.classList.remove("ship-error");
     shipUI.style.position = "";
     battleship.ship.orientation = "h";
     battleship.hRow = undefined;
@@ -181,18 +231,30 @@ function dragLeaveHandler(event) {
     const gameboardUI = document.getElementById("gameboard");
     const gameboard = gameboardUI.gameboard;
 
-    // Exit early if background didn't change at all
-    const headCellIsInvalid = shipIsVertical
-        ? hRow < 0 || hRow + shipLength > gameboard.size
-        : hCol < 0 || hCol + shipLength > gameboard.size;
-    if (headCellIsInvalid) return;
+    // Save a reference to the previous head cell coords
+    const prevRow = battleship.hRow;
+    const prevCol = battleship.hCol;
 
-    // Remove the drag over background changes
-    for (let i = 0; i < shipLength; i++) {
-        const row = shipIsVertical ? hRow + i : hRow;
-        const col = shipIsVertical ? hCol : hCol + i;
-        let cellContent = domCells[row][col];
-        cellContent.style.backgroundColor = "";
+    // Change battleship head cell coords to new head cell coords
+    battleship.hRow = hRow;
+    battleship.hCol = hCol;
+
+    // Check if we need to remove the drag over background change
+    try {
+        gameboard.checkPlacementOf(battleship);
+        // The code below won't execute if the code above throws an error
+        for (let i = 0; i < shipLength; i++) {
+            const row = shipIsVertical ? hRow + i : hRow;
+            const col = shipIsVertical ? hCol : hCol + i;
+            let cellContent = domCells[row][col];
+            cellContent.style.backgroundColor = "";
+        }
+    } catch (error) {
+        return;
+    } finally {
+        // Always return the battleship to its previous coords after
+        battleship.hRow = prevRow;
+        battleship.hCol = prevCol;
     }
 }
 
@@ -241,11 +303,12 @@ function dropHandler(event) {
 
     // change ship position to absolute before dropping
     shipUI.style.position = "absolute";
-    shipUI.style.top = "0px";
-    shipUI.style.left = "0px";
 
     // Drop the shipUI in the head cell
     domCells[hRow][hCol].appendChild(shipUI);
+
+    // Remove the "ship-error" class if it was ever applied
+    shipUI.classList.remove("ship-error");
 
     // Remove the drag over background changes
     for (let i = 0; i < shipLength; i++) {
@@ -255,6 +318,7 @@ function dropHandler(event) {
         cellContent.style.backgroundColor = "";
     }
 
+    // Alert the start button if the board is ready
     const fleetUI = document.getElementById("fleet");
     const startBtn = document.getElementById("start-btn");
     if (fleetUI.querySelectorAll(".ship").length > 0) {
@@ -267,6 +331,7 @@ function dropHandler(event) {
 export {
     mouseDownHandler,
     dragStartHandler,
+    dragEndHandler,
     onClickHandler,
     dragOverHandler,
     dragLeaveHandler,
@@ -279,6 +344,7 @@ export {
 export default {
     mouseDownHandler,
     dragStartHandler,
+    dragEndHandler,
     onClickHandler,
     dragOverHandler,
     dragLeaveHandler,

@@ -14,6 +14,9 @@ function randomizeShips(event) {
 
     const shipUIs = Array.from(document.getElementsByClassName("ship"));
     shipUIs.forEach(shipUI => {
+        // Remove the "ship-error" class if it was ever applied
+        shipUI.classList.remove("ship-error");
+
         const battleship = shipUI.battleship;
         if (battleship.ship.orientation === "v") {
             shipUI.classList.add("vertical-ship");

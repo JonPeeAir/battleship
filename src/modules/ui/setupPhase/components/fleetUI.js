@@ -30,6 +30,7 @@ function createFleetUI(fleet) {
         shipUI.battleship = createBattleShip(ship, undefined, undefined);
         // Attach shipUI event listeners
         shipUI.addEventListener("dragstart", Drag.dragStartHandler);
+        shipUI.addEventListener("dragend", Drag.dragEndHandler);
         shipUI.addEventListener("click", Drag.onClickHandler);
 
         for (let i = 0; i < ship.length; i++) {

@@ -111,6 +111,8 @@
 .ship-part {
     width: 2.875rem;
     height: 2.875rem;
+    top: 0;
+    left: 0;
 }
 
 .gameboard {
