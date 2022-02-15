@@ -11,7 +11,8 @@ function renderGamePhaseFor(player, enemy) {
     gameContent.classList.add("game-content");
 
     const playerUI = createPlayerUI(player);
-    const enemyUI = createEnemyUI(enemy);
+    enemy.gameboard.randomize(enemy.fleet);
+    const enemyUI = createEnemyUI(enemy, player);
 
     gameContent.append(playerUI, enemyUI);
 

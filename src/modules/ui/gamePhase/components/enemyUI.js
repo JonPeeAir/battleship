@@ -6,7 +6,7 @@ function createBoardLabel() {
     return boardLabel;
 }
 
-function createEnemyBoardUI(enemy) {
+function createEnemyBoardUI(enemy, player) {
     // Create playerBoardUI
     const enemyBoardUI = document.createElement("table");
     enemyBoardUI.id = "opponent-board";
@@ -31,6 +31,17 @@ function createEnemyBoardUI(enemy) {
             cellContent.row = i;
             cellContent.col = j;
 
+            cellContent.onclick = () => {
+                const hit = player.attack(enemy, i, j);
+                if (hit) {
+                    cellContent.style.backgroundColor = "rgba(0, 0, 0, 0.25)";
+                } else {
+                    cellContent.style.backgroundColor = "rgba(255, 0, 0, 0.25)";
+                }
+
+                console.log(enemy.hasLost());
+            };
+
             cell.appendChild(cellContent);
             row.appendChild(cell);
         }
@@ -41,12 +52,12 @@ function createEnemyBoardUI(enemy) {
     return enemyBoardUI;
 }
 
-function createEnemyUI(enemy) {
+function createEnemyUI(enemy, player) {
     const enemyArea = document.createElement("div");
     enemyArea.id = "opponent-area";
     enemyArea.classList.add("player-area");
 
-    enemyArea.append(createBoardLabel(), createEnemyBoardUI(enemy));
+    enemyArea.append(createBoardLabel(), createEnemyBoardUI(enemy, player));
 
     return enemyArea;
 }
