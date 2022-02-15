@@ -16,7 +16,7 @@ test("createPlayer returns a player object", () => {
 
     // Test if object is set with the correct prototype
     const playerProto = Object.getPrototypeOf(p1);
-    expect(playerProto).toHaveProperty("placeShip");
+    expect(playerProto).toHaveProperty("isReady");
     expect(playerProto).toHaveProperty("attack");
     expect(playerProto).toHaveProperty("hasLost");
 
@@ -33,7 +33,7 @@ test("isPlayer returns false when given a non-player", () => {
     const p1 = {
         name: "p1",
         gameboard: Gameboard.createGameboard(),
-        ships: [],
+        fleet: [],
     };
     expect(Player.isPlayer(p1)).toBe(false);
 });
@@ -45,149 +45,125 @@ describe("Player object related tests", () => {
         p2 = Player.createPlayer("p2");
     });
 
-    describe("Player.name tests", () => {
-        test("Player.name is set to the correct name", () => {
+    describe("Player.name", () => {
+        test("is set to the correct name", () => {
             expect(p1.name).toBe("p1");
         });
     });
 
-    describe("Player.gameboard tests", () => {
-        test("Player.gameboard is a Gameboard object", () => {
+    describe("Player.gameboard", () => {
+        test("is a Gameboard object", () => {
             expect(Gameboard.isGameboard(p1.gameboard)).toBe(true);
-        });
-
-        test("Player.prototype.placeShip places a ship given its index on the gameboard", () => {
-            p1.placeShip(0, 0, 0);
-            expect(p1.gameboard.ships[0].ship.length).toBe(1);
-            expect(p1.gameboard.ships[0].hRow).toBe(0);
-            expect(p1.gameboard.ships[0].hCol).toBe(0);
-        });
-
-        test("Player.prototype.placeShip updates the ships coords if a placed ship is passed in", () => {
-            p1.placeShip(0, 0, 0);
-            expect(p1.gameboard.ships[0].hRow).toBe(0);
-            expect(p1.gameboard.ships[0].hCol).toBe(0);
-
-            p1.placeShip(0, 0, 1);
-            expect(p1.gameboard.ships[0].hRow).toBe(0);
-            expect(p1.gameboard.ships[0].hCol).toBe(1);
-        });
-
-        test("Player.prototype.placeShip throws an error when given an invalid ship index", () => {
-            expect(() => p1.placeShip(-1, 0, 0)).toThrow();
-            expect(() => p1.placeShip(10, 0, 0)).toThrow();
-        });
-
-        test("Player.prototype.placeShip throws an error when given invalid coords", () => {
-            expect(() => p1.placeShip(0, -1, 0)).toThrow();
-            expect(() => p1.placeShip(0, 10, 0)).toThrow();
-            expect(() => p1.placeShip(0, 0, -1)).toThrow();
-            expect(() => p1.placeShip(0, 0, 10)).toThrow();
-            expect(() => p1.placeShip(0, -1, -1)).toThrow();
-            expect(() => p1.placeShip(0, 10, 10)).toThrow();
-        });
-
-        test("Player.prototype.placeShip throws an error when trying to place ship on top of another ship", () => {
-            p1.placeShip(0, 0, 0);
-            expect(() => p1.placeShip(1, 0, 0)).toThrow();
         });
     });
 
-    describe("Player.fleet tests", () => {
-        test("Player.fleet has four length 1 ships", () => {
+    describe("Player.fleet", () => {
+        test("has four length 1 ships by default", () => {
             for (let i = 0; i < 4; i++) {
                 expect(p1.fleet[i].length).toBe(1);
             }
         });
 
-        test("Player.fleet has three length 2 ships", () => {
+        test("has three length 2 ships by default", () => {
             for (let i = 0; i < 3; i++) {
                 expect(p1.fleet[i + 4].length).toBe(2);
             }
         });
 
-        test("Player.fleet has two length 3 ships", () => {
+        test("has two length 3 ships by default", () => {
             expect(p1.fleet[7].length).toBe(3);
             expect(p1.fleet[8].length).toBe(3);
         });
 
-        test("Player.fleet has one length 4 ship", () => {
+        test("has one length 4 ship by default", () => {
             expect(p1.fleet[9].length).toBe(4);
         });
+    });
+});
 
-        test("Player.prototype.hasLost returns false when not all of the ships in the fleet have sunk", () => {
-            expect(p1.hasLost()).toBe(false);
+describe("Player.prototype related tests", () => {
+    let p1, p2;
+    beforeEach(() => {
+        p1 = Player.createPlayer("p1");
+        p1.fleet = [createShip(2)];
+
+        p2 = Player.createPlayer("p2");
+        p2.fleet = [createShip(2)];
+    });
+
+    describe("Player.prototype.isReady", () => {
+        test("returns true when all ships in the fleet are placed on the board", () => {
+            p1.gameboard.putShip(p1.fleet[0], 0, 0);
+            expect(p1.isReady()).toBe(true);
         });
 
-        test("Player.prototype.hasLost returns true when all ships in the fleet have sunk", () => {
-            p1.placeShip(0, 0, 0);
-            p1.placeShip(1, 0, 2);
-            p1.placeShip(2, 0, 4);
-            p1.placeShip(3, 0, 6);
-
-            p1.placeShip(4, 0, 0);
-            p1.placeShip(5, 0, 0);
-            p1.placeShip(6, 0, 0);
-
-            p1.placeShip(7, 0, 0);
-            p1.placeShip(8, 0, 0);
-
-            p1.placeShip(9, 0, 0);
-
-            expect(p1.hasLost()).toBe(true);
+        test("return false when not all ships in the fleet are placed in the board", () => {
+            expect(p1.isReady()).toBe(false);
         });
     });
 
-    describe("Other Player.prototype tests", () => {
-        test("Player.prototype.attack throws an error if player is not ready", () => {
-            expect(p1.isReady()).toBe(false);
-            expect(() => p1.attack(p2.gameboard, 0, 0)).toThrow();
-        });
-
-        test("Player.prototype.attack throws an error when if opponent is not ready", () => {
-            // Reset the default fleet to make testing easier
-            p1.resetFleet();
-            p1.addShip(createShip(1));
-            p1.placeShip(0, 0, 0);
-
-            expect(p1.isReady()).toBe(true);
-            expect(p2.isReady()).toBe(false);
-
-            expect(() => p1.attack(p2.gameboard, 0, 0)).toThrow();
-        });
-
-        test("Player.prototype.attack properly attacks the gamboard of another player", () => {
-            // Reset the default fleet to make testing easier
-            p1.resetFleet();
-            p1.addShip(createShip(1));
-            p1.placeShip(0, 0, 0);
-
-            p2.resetFleet();
-            p2.addShip(createShip(1));
-            p2.placeShip(0, 0, 0);
-
-            expect(p1.isReady()).toBe(true);
+    describe("Player.prototype.attack", () => {
+        test("attacks the given opponent at given coords", () => {
+            p2.gameboard.randomize(p2.fleet);
             expect(p2.isReady()).toBe(true);
-
-            p1.attack(p2.gameboard, 0, 0);
+            expect(p2.gameboard.playArea[0][0]).toBe(false);
+            p1.attack(p2, 0, 0);
             expect(p2.gameboard.playArea[0][0]).toBe(true);
         });
 
-        test("Player.prototype.attack throws an error when trying to hit the same spot of a given board", () => {
-            // Reset the default fleet to make testing easier
-            p1.resetFleet();
-            p1.addShip(createShip(1));
-            p1.placeShip(0, 0, 0);
-
-            p2.resetFleet();
-            p2.addShip(createShip(1));
-            p2.placeShip(0, 0, 0);
-
-            expect(p1.isReady()).toBe(true);
+        test("updates the opponents ships if the attack hits", () => {
+            p2.gameboard.putShip(p2.fleet[0], 0, 0);
             expect(p2.isReady()).toBe(true);
+            expect(p2.gameboard.playArea[0][0]).toBe(false);
+            expect(p2.fleet[0].hit[0]).toBe(false);
 
-            p1.attack(p2.gameboard, 0, 0);
-            expect(() => p1.attack(p2.gameboard, 0, 0)).toThrow();
+            p1.attack(p2, 0, 0);
+
+            expect(p2.gameboard.playArea[0][0]).toBe(true);
+            expect(p2.fleet[0].hit[0]).toBe(true);
+        });
+
+        test("only updates the opponent's playArea if the attack doesn't hit", () => {
+            p2.gameboard.putShip(p2.fleet[0], 0, 0);
+            expect(p2.isReady()).toBe(true);
+            expect(p2.gameboard.playArea[0][0]).toBe(false);
+            expect(p2.fleet[0].hit[0]).toBe(false);
+
+            p1.attack(p2, 1, 0);
+
+            expect(p2.gameboard.playArea[1][0]).toBe(true);
+            expect(p2.fleet[0].hit[0]).toBe(false);
+        });
+
+        test("throws an error when trying to attack a non-player", () => {
+            const nonPlayer = { name: "jeff", gameboard: {}, fleet: [] };
+            expect(() => p1.attack(nonPlayer, 0, 0)).toThrow();
+        });
+
+        test("throws an error when trying to attack a player that is not ready", () => {
+            expect(() => p1.attack(p2, 0, 0)).toThrow();
+        });
+
+        test("throws an error when trying to attack itself", () => {
+            p1.gameboard.randomize(p1.fleet);
+            expect(p1.isReady()).toBe(true);
+
+            expect(() => p1.attack(p1, 0, 0)).toThrow();
+        });
+    });
+
+    describe("Player.prototype.hasLost", () => {
+        test("returns true when all ships in the fleet have sunk", () => {
+            p1.fleet.forEach(ship => {
+                for (let i = 0; i < ship.length; i++) {
+                    ship.hitShip(i);
+                }
+            });
+            expect(p1.hasLost()).toBe(true);
+        });
+
+        test("returns false when not all ships in the fleet have sunk", () => {
+            expect(p1.hasLost()).toBe(false);
         });
     });
 });
