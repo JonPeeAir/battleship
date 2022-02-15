@@ -1,3 +1,5 @@
+import { renderGamePhaseFor } from "../../gamePhase/gamePhase";
+
 // I should clean this up
 function randomizeShips(event) {
     event.target.disabled = true;
@@ -117,6 +119,16 @@ function createGameButtons() {
     startBtn.classList.add("start-btn");
     startBtn.disabled = true;
     startBtn.textContent = "START GAME";
+    startBtn.onclick = () => {
+        const gameContent = document.getElementById("game-content");
+        const player = gameContent.player;
+        const enemy = gameContent.enemy;
+
+        const main = document.getElementById("main");
+        main.innerHTML = "";
+
+        main.appendChild(renderGamePhaseFor(player, enemy));
+    };
     startBtn.addEventListener("boardIsSet", () => {
         startBtn.disabled = false;
     });

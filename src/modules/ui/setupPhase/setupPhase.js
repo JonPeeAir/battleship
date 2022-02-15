@@ -1,8 +1,9 @@
+import { createPlayer } from "../../factories/player";
 import { createFleetUI } from "./components/fleetUI";
 import { createGameboardUI } from "./components/gameboardUI";
 import { createGameButtons } from "./components/gameButtons";
 
-function renderSetupPhaseFor(player) {
+function renderSetupPhaseFor(player, enemy = createPlayer("p2")) {
     const setupPhase = document.createElement("div");
     setupPhase.id = "setup-phase";
     setupPhase.classList.add("setup-phase");
@@ -15,6 +16,7 @@ function renderSetupPhaseFor(player) {
     gameContent.id = "game-content";
     gameContent.classList.add("game-content");
     gameContent.player = player;
+    gameContent.enemy = enemy;
     gameContent.append(fleetUI, gameboardUI);
 
     setupPhase.append(gameContent, gameButtons);
