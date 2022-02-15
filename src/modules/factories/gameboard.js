@@ -1,4 +1,3 @@
-import events from "events";
 import { isShip } from "./ship";
 
 // Edit this if you want to change overall gameboard size
@@ -59,15 +58,6 @@ function createBattleShip(ship, headRow, headColumn) {
 
 const boardProto = (() => {
     // Private helper method
-    function timeoutPromise(delay) {
-        return new Promise((resolve, reject) => {
-            setTimeout(function () {
-                resolve("Timeout!");
-            }, delay);
-        });
-    }
-
-    // Private helper method
     function randFrom(min, max) {
         min = Math.ceil(min);
         max = Math.floor(max);
@@ -78,6 +68,8 @@ const boardProto = (() => {
 
     // Private helper method
     function updateShips(row, col) {
+        let shipWasHit = false;
+
         this.ships.forEach(ship => {
             const attackHits = ship.coords.some(coord => {
                 return coord.toString() === [row, col].toString();
@@ -89,12 +81,11 @@ const boardProto = (() => {
 
             if (attackHits) {
                 ship.ship.hitShip(hitIndex);
-                // Return true if a ship was hit
-                return true;
+                shipWasHit = true;
             }
-            // Return false if a ship was not hit
-            return false;
         });
+
+        return shipWasHit;
     }
 
     // Private helper method
