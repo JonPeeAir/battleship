@@ -64,7 +64,7 @@ function isPlayer(player) {
         player.hasOwnProperty("name") &&
         player.hasOwnProperty("gameboard") &&
         player.hasOwnProperty("fleet") &&
-        Object.getPrototypeOf(player) === playerProto
+        playerProto.isPrototypeOf(player)
     );
 }
 

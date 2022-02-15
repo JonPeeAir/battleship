@@ -404,7 +404,7 @@ function isGameboard(gameboard) {
         gameboard.hasOwnProperty("size") &&
         gameboard.hasOwnProperty("playArea") &&
         gameboard.hasOwnProperty("ships") &&
-        Object.getPrototypeOf(gameboard) === boardProto
+        boardProto.isPrototypeOf(gameboard)
     );
 }
 

@@ -61,7 +61,7 @@ function isShip(ship) {
         ship.hasOwnProperty("length") &&
         ship.hasOwnProperty("hit") &&
         ship.hasOwnProperty("orientation") &&
-        Object.getPrototypeOf(ship) === shipProto
+        shipProto.isPrototypeOf(ship)
     );
 }
 
