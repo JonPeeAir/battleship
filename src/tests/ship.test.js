@@ -1,4 +1,4 @@
-import Ship from "../src/modules/factories/ship";
+import Ship from "../modules/factories/ship";
 
 test("createShip returns an object", () => {
     expect(Ship.createShip(4)).toBeInstanceOf(Object);

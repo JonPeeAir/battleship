@@ -1,6 +1,6 @@
-import Player from "../src/modules/factories/player";
-import Gameboard from "../src/modules/factories/gameboard";
-import { createShip } from "../src/modules/factories/ship";
+import Player from "../modules/factories/player";
+import Gameboard from "../modules/factories/gameboard";
+import { createShip } from "../modules/factories/ship";
 
 test("createPlayer returns an object", () => {
     expect(Player.createPlayer("p1")).toBeInstanceOf(Object);
