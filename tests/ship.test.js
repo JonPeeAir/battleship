@@ -11,15 +11,12 @@ test("createShip returns a ship object", () => {
     expect(ship).toHaveProperty("length");
     expect(ship).toHaveProperty("hit");
     expect(ship).toHaveProperty("orientation");
-    expect(ship).toHaveProperty("set");
 
     // Test prototype properties
     const shipProto = Object.getPrototypeOf(ship);
     expect(shipProto).toHaveProperty("changeOrientation");
     expect(shipProto).toHaveProperty("hitShip");
     expect(shipProto).toHaveProperty("isSunk");
-    expect(shipProto).toHaveProperty("setShip");
-    expect(shipProto).toHaveProperty("unsetShip");
     expect(shipProto).toHaveProperty("reset");
 
     // Also test if it passes the isShip function
@@ -46,40 +43,71 @@ test("isShip returns false when given a non-ship", () => {
 
 describe("Ship object related tests", () => {
     let ship;
-
     beforeEach(() => {
         ship = Ship.createShip(4);
     });
 
-    describe("Ship.length tests", () => {
-        test("Ship.length returns its length", () => {
+    describe("Ship.length", () => {
+        test("returns its length", () => {
             expect(ship.length).toBe(4);
         });
 
-        test("Ship.length cannot be modified", () => {
+        test("cannot be modified", () => {
             expect(() => (ship.length = 5)).toThrow();
         });
     });
 
-    describe("Ship.hit tests", () => {
-        test("Ship.hit has all values set to false when created", () => {
+    describe("Ship.hit", () => {
+        test("has all values set to false when created", () => {
             expect(ship.hit).toMatchObject([false, false, false, false]);
         });
 
-        test("Ship.hit cannot be modified", () => {
+        test("cannot be modified", () => {
             expect(() => (ship.hit = [])).toThrow();
         });
 
-        test("Ship.hit has a fixed length", () => {
+        test("has a fixed length", () => {
             expect(() => (ship.hit[4] = false)).toThrow();
         });
+    });
 
-        test("Ship.prototype.hitShip() hits the ship at specified index", () => {
+    describe("Ship.orientation tests", () => {
+        test("is set to 'h' by default", () => {
+            expect(ship.orientation).toBe("h");
+        });
+
+        test("throws an error when trying to set it to a value other than 'h' or 'v'", () => {
+            expect(() => (ship.orientation = "yeet")).toThrow();
+            expect(() => (ship.orientation = "h")).not.toThrow();
+        });
+    });
+});
+
+describe("Ship.prototype related tests", () => {
+    let ship;
+    beforeEach(() => {
+        ship = Ship.createShip(4);
+    });
+
+    describe("Ship.prototype.changeOrientation", () => {
+        test("correctly changes Ship.orientation", () => {
+            expect(ship.orientation).toBe("h");
+
+            ship.changeOrientation();
+            expect(ship.orientation).toBe("v");
+
+            ship.changeOrientation();
+            expect(ship.orientation).toBe("h");
+        });
+    });
+
+    describe("Ship.prototype.hitShip", () => {
+        test("hits the ship at specified index", () => {
             ship.hitShip(2);
             expect(ship.hit[2]).toBe(true);
         });
 
-        test("Ship.prototype.hitShip() throws error when attempting to hit ship at invalid index", () => {
+        test("throws error when attempting to hit ship at invalid index", () => {
             // Ship length is 4
             expect(() => ship.hitShip(4)).toThrow();
             expect(() => ship.hitShip(-1)).toThrow();
@@ -87,69 +115,25 @@ describe("Ship object related tests", () => {
         });
     });
 
-    describe("Ship.orientation tests", () => {
-        test("Ship.orientation is set to 'h' by default", () => {
-            expect(ship.orientation).toBe("h");
-        });
-
-        test("Ship.orientation throws an error when trying to set it to a value other than 'h' or 'v'", () => {
-            expect(() => (ship.orientation = "yeet")).toThrow();
-            expect(() => (ship.orientation = "h")).not.toThrow();
-        });
-
-        test("Ship.prototype.changeOrientation() correctly changes Ship.orientation", () => {
-            expect(ship.orientation).toBe("h");
-
-            ship.changeOrientation();
-            expect(ship.orientation).toBe("v");
-
-            ship.changeOrientation();
-            expect(ship.orientation).toBe("h");
-        });
-    });
-
-    describe("Ship.set tests", () => {
-        test("Ship.set is set to false by default", () => {
-            expect(ship.set).toBe(false);
-        });
-
-        test("Ship.set throws an error when trying to set it to a value other than true or false", () => {
-            expect(() => (ship.set = "some other value")).toThrow();
-            expect(() => (ship.set = true)).not.toThrow();
-        });
-
-        test("Ship.prototype.setShip() sets Ship.set to true", () => {
-            ship.setShip();
-            expect(ship.set).toBe(true);
-        });
-
-        test("Ship.prototype.unsetShip() sets Ship.set to false", () => {
-            ship.setShip();
-            ship.unsetShip();
-            expect(ship.set).toBe(false);
-        });
-    });
-
-    describe("Other Ship.prototype related tests", () => {
-        test("Ship.prototype.isSunk() returns false when ship has not fully sunk", () => {
+    describe("Ship.prototype.isSunk", () => {
+        test("returns false when ship has not fully sunk", () => {
             expect(ship.isSunk()).toBe(false);
         });
 
-        test("Ship.prototype.isSunk() returns true when ship has fully sunk", () => {
+        test("returns true when ship has fully sunk", () => {
             for (let i = 0; i < ship.length; i++) {
                 ship.hitShip(i);
             }
 
             expect(ship.isSunk()).toBe(true);
         });
+    });
 
-        test("Ship.prototype.reset() factory resets a ship", () => {
+    describe("Ship.prototype.reset", () => {
+        test("factory resets a ship", () => {
             // Mess around with ship
             ship.changeOrientation();
             expect(ship.orientation).toBe("v");
-            ship.setShip();
-            expect(ship.set).toBe(true);
-            expect(() => ship.changeOrientation()).toThrow();
             for (let i = 0; i < ship.length; i++) {
                 ship.hitShip(i);
             }
@@ -157,12 +141,11 @@ describe("Ship object related tests", () => {
 
             // Reset the ship
             ship.reset();
+
+            // Test if ship has reset
             expect(ship.isSunk()).toBe(false);
             expect(ship.hit).toMatchObject([false, false, false, false]);
-            expect(ship.set).toBe(false);
             expect(ship.orientation).toBe("h");
-            expect(() => ship.changeOrientation()).not.toThrow();
-            expect(ship.orientation).toBe("v");
         });
     });
 });

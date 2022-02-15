@@ -89,9 +89,11 @@ const boardProto = (() => {
 
             if (attackHits) {
                 ship.ship.hitShip(hitIndex);
-                // Then alert subscribers of a ship update if the attack hits
-                this.event.emit("shipUpdate");
+                // Return true if a ship was hit
+                return true;
             }
+            // Return false if a ship was not hit
+            return false;
         });
     }
 
@@ -137,14 +139,6 @@ const boardProto = (() => {
     }
 
     return {
-        setBoard() {
-            this.set = true;
-        },
-
-        unsetBoard() {
-            this.set = false;
-        },
-
         checkPlacementOf(battleship) {
             if (shipCrossesTheBorders.call(this, battleship)) {
                 throw new Error("Ship crosses the borders");
@@ -157,8 +151,6 @@ const boardProto = (() => {
 
         putShip(ship, headRow, headColumn) {
             // Initial error checks
-            if (this.set)
-                throw new Error("Cannot put new ship when the board is set");
             if (!isShip(ship))
                 throw new Error("Invalid ship passed to Gameboard.putShip");
 
@@ -192,8 +184,6 @@ const boardProto = (() => {
 
         moveShip(battleship, headRow, headColumn) {
             // Initial error checks
-            if (this.set)
-                throw new Error("Cannot move ship when the board is set");
             if (this.ships.every(ship => ship !== battleship)) {
                 throw new Error(
                     `You must put this ship in the board first before moving it`,
@@ -227,9 +217,6 @@ const boardProto = (() => {
 
         rotateShip(battleship) {
             // Initial error checks
-            if (this.set)
-                throw new Error("Cannot rotate ship when the board is set");
-
             if (this.ships.every(ship => ship !== battleship))
                 throw new Error(
                     `You must put this ship in the board first before rotating it`,
@@ -256,8 +243,6 @@ const boardProto = (() => {
 
         receiveAttack(row, col) {
             // Error checks
-            if (!this.set)
-                throw new Error("Cannot receive attack unless board is set");
             if (row < 0 || row >= this.size || col < 0 || col >= this.size)
                 throw new Error("Invalid coords, found outside of board");
             if (this.playArea[row][col] === true)
@@ -266,17 +251,12 @@ const boardProto = (() => {
             // If no errors were thrown, safely update the board
             this.playArea[row][col] = true;
 
-            // Then alert subscribers of a board update
-            this.event.emit("boardUpdate");
-
-            // Then update the ships if the attack hits
-            updateShips.call(this, row, col);
+            // Then update the ships if the attack hits and return a boolean value for whether a ship was hit or not
+            return updateShips.call(this, row, col);
         },
 
         randomize(ships = []) {
             // Error checks
-            if (this.set)
-                throw new Error("Cannot randomize ships when the board is set");
             if (ships.length === 0 && this.ships.length === 0)
                 throw new Error(
                     "Randomize has no effect, consider adding some ships",
@@ -400,13 +380,10 @@ const boardProto = (() => {
         },
 
         hasLost() {
-            if (!this.set)
-                throw new Error("Cannot determine if board is not set");
             return this.ships.every(battleShip => battleShip.ship.isSunk());
         },
 
         reset() {
-            this.unsetBoard();
             this.playArea.forEach(column => {
                 column.fill(false);
             });
@@ -421,30 +398,11 @@ function createGameboard() {
     for (let i = 0; i < playArea.length; i++) {
         playArea[i] = new Array(size).fill(false);
     }
-    let setValue = false;
-    let event = new events.EventEmitter();
 
     const gameboard = Object.assign(Object.create(boardProto), {
         size,
         playArea,
         ships: [],
-    });
-
-    Object.defineProperties(gameboard, {
-        set: {
-            get: () => setValue,
-            set: newValue => {
-                if (newValue === true || newValue === false) {
-                    setValue = newValue;
-                } else {
-                    throw new Error("Invalid assignment to set");
-                }
-            },
-        },
-        event: {
-            get: () => event,
-            set: newEvent => (event = newEvent),
-        },
     });
 
     return Object.freeze(gameboard);
@@ -455,8 +413,6 @@ function isGameboard(gameboard) {
         gameboard.hasOwnProperty("size") &&
         gameboard.hasOwnProperty("playArea") &&
         gameboard.hasOwnProperty("ships") &&
-        gameboard.hasOwnProperty("event") &&
-        gameboard.hasOwnProperty("set") &&
         Object.getPrototypeOf(gameboard) === boardProto
     );
 }

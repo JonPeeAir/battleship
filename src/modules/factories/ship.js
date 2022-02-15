@@ -1,17 +1,8 @@
 const shipProto = {
     changeOrientation() {
-        if (this.set) {
-            throw new Error("Cannot change orientation of a ship that is set");
-        } else {
-            this.orientation = this.orientation === "h" ? "v" : "h";
-        }
+        this.orientation = this.orientation === "h" ? "v" : "h";
     },
-    setShip() {
-        this.set = true;
-    },
-    unsetShip() {
-        this.set = false;
-    },
+
     hitShip(index) {
         if (index >= 0 && index < this.length) {
             this.hit[index] = true;
@@ -19,22 +10,22 @@ const shipProto = {
             throw new Error("Cannot hit ship at forbidden index");
         }
     },
+
     isSunk() {
         for (let i = 0; i < this.length; i++) {
             if (!this.hit[i]) return false;
         }
         return true;
     },
+
     reset() {
         this.orientation = "h";
         this.hit.fill(false);
-        this.unsetShip();
     },
 };
 
 function createShip(length) {
     let orientation = "h";
-    let setValue = false;
 
     const ship = Object.assign(Object.create(shipProto), {
         length,
@@ -54,16 +45,6 @@ function createShip(length) {
                 }
             },
         },
-        set: {
-            get: () => setValue,
-            set: newValue => {
-                if (newValue === true || newValue === false) {
-                    setValue = newValue;
-                } else {
-                    throw new Error("Invalid assignment to set");
-                }
-            },
-        },
     });
 
     // Ensure ship.hit has a fixed length
@@ -80,7 +61,6 @@ function isShip(ship) {
         ship.hasOwnProperty("length") &&
         ship.hasOwnProperty("hit") &&
         ship.hasOwnProperty("orientation") &&
-        ship.hasOwnProperty("set") &&
         Object.getPrototypeOf(ship) === shipProto
     );
 }

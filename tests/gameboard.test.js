@@ -16,13 +16,9 @@ test("createGameboard returns a Gameboard object", () => {
     expect(gameboard).toHaveProperty("size");
     expect(gameboard).toHaveProperty("playArea");
     expect(gameboard).toHaveProperty("ships");
-    expect(gameboard).toHaveProperty("set");
-    expect(gameboard).toHaveProperty("event");
 
     // Test prototype properties
     const gbProto = Object.getPrototypeOf(gameboard);
-    expect(gbProto).toHaveProperty("setBoard");
-    expect(gbProto).toHaveProperty("unsetBoard");
     expect(gbProto).toHaveProperty("checkPlacementOf");
     expect(gbProto).toHaveProperty("putShip");
     expect(gbProto).toHaveProperty("removeShip");
@@ -44,17 +40,15 @@ test("isGameboard returns true when given a gameboard", () => {
 
 test("isGameboard returns false when given a non-gameboard", () => {
     const nonGameboard = {
+        size: 10,
         playArea: [[false]],
         ships: [],
-        set: false,
-        event: {},
     };
     expect(Gameboard.isGameboard(nonGameboard)).toBe(false);
 });
 
 describe("Gameboard object related tests", () => {
     let gameboard;
-
     beforeEach(() => {
         gameboard = Gameboard.createGameboard();
     });
@@ -88,46 +82,12 @@ describe("Gameboard object related tests", () => {
             expect(gameboard.ships).toEqual(new Array());
         });
     });
-
-    describe("Gameboard.set", () => {
-        test("is initialized to false", () => {
-            expect(gameboard.set).toBe(false);
-        });
-    });
-
-    describe("Gameboard.event", () => {
-        test("is an EventEmitter object", () => {
-            expect(gameboard.event.constructor.name).toBe("EventEmitter");
-        });
-
-        test("No two Gameboards have the same event object", () => {
-            const gameboard2 = Gameboard.createGameboard();
-            expect(gameboard.event == gameboard2.event).toBe(false);
-        });
-    });
 });
 
 describe("Gameboard prototype tests", () => {
     let gameboard;
     beforeEach(() => {
         gameboard = Gameboard.createGameboard();
-    });
-
-    describe("Gameboard.prototype.setBoard", () => {
-        test("sets Gameboard.set to true", () => {
-            gameboard.setBoard();
-            expect(gameboard.set).toBe(true);
-        });
-    });
-
-    describe("Gameboard.prototype.unsetBoard", () => {
-        test("sets Gameboard.set to false", () => {
-            gameboard.setBoard();
-            expect(gameboard.set).toBe(true);
-
-            gameboard.unsetBoard();
-            expect(gameboard.set).toBe(false);
-        });
     });
 
     describe("Gameboard.prototype.checkPlacementOf", () => {
@@ -202,12 +162,6 @@ describe("Gameboard prototype tests", () => {
             });
         });
 
-        test("throws an error when trying to put a ship on a set board", () => {
-            const ship = createShip(3);
-            gameboard.setBoard();
-            expect(() => gameboard.putShip(ship, 0, 0)).toThrow();
-        });
-
         test("throws an error when passed in a non-ship", () => {
             const nonShip = {
                 length: 4,
@@ -265,18 +219,12 @@ describe("Gameboard prototype tests", () => {
             expect(gameboard.ships[0].hCol).toBe(1);
         });
 
-        test("throws an error when trying to move a ship on a set board", () => {
-            const battleship = gameboard.putShip(createShip(3), 0, 0);
-            gameboard.setBoard();
-            expect(() => gameboard.moveShip(battleship, 1, 0)).toThrow();
-        });
-
-        test("throws an error when the given ship that has not been placed on the board", () => {
+        test("throws an error when given a ship that has not been placed on the board", () => {
             const battleship = createBattleShip(createShip(3), 0, 0);
             expect(() => gameboard.moveShip(battleship, 1, 0)).toThrow();
         });
 
-        test("throws an error when the given coords cross go outside the board", () => {
+        test("throws an error when given coords that go outside the board", () => {
             const battleship1 = gameboard.putShip(createShip(3), 0, 0);
             expect(() => gameboard.moveShip(battleship1, 0, 8)).toThrow();
 
@@ -302,17 +250,11 @@ describe("Gameboard prototype tests", () => {
             expect(gameboard.ships[0].ship.orientation).toBe("v");
         });
 
-        test("throws an error when trying to rotate a ship on a set board", () => {
-            const battleship = gameboard.putShip(createShip(3), 0, 0);
-            gameboard.setBoard();
-            expect(() => gameboard.rotateShip(battleship)).toThrow();
-        });
-
-        test("throws an error when the given ship has not been placed on the board", () => {
+        test("throws an error when given a ship has not been placed on the board", () => {
             expect(() => gameboard.rotateShip(createShip(3))).toThrow();
         });
 
-        test("throws an error if rotating the ship causes it to cross outside the board", () => {
+        test("throws an error if rotating the ship causes it to go outside the board", () => {
             const battleship1 = gameboard.putShip(createShip(3), 9, 0);
             expect(() => gameboard.rotateShip(battleship1)).toThrow();
 
@@ -356,16 +298,10 @@ describe("Gameboard prototype tests", () => {
         test("throws an error if there are no ships to randomize and no optional 'ships' array was given", () => {
             expect(() => gameboard.randomize()).toThrow();
         });
-
-        test("throws an error if the board is alread set", () => {
-            gameboard.setBoard();
-            expect(() => gameboard.randomize()).toThrow();
-        });
     });
 
     describe("Gameboard.prototype.receiveAttack", () => {
         test("correctly updates the playArea", () => {
-            gameboard.setBoard();
             gameboard.receiveAttack(1, 1);
             expect(gameboard.playArea[1][1]).toBe(true);
         });
@@ -373,7 +309,6 @@ describe("Gameboard prototype tests", () => {
         test("updates Gameboard.ships if the attack hits", () => {
             const ship = createShip(3);
             gameboard.putShip(ship, 0, 0);
-            gameboard.setBoard();
 
             gameboard.receiveAttack(0, 0);
             expect(gameboard.ships[0].ship.hit[0]).toBe(true);
@@ -382,27 +317,15 @@ describe("Gameboard prototype tests", () => {
         test("makes no changes to Gameboard.ships if the attack doesn't hit", () => {
             const ship = createShip(3);
             gameboard.putShip(ship, 0, 0);
-            gameboard.setBoard();
 
             gameboard.receiveAttack(0, 1);
             expect(gameboard.ships[0].ship.hit[0]).toBe(false);
-        });
-
-        test("throws an error when the board is not set", () => {
-            expect(() => gameboard.receiveAttack(1, 1)).toThrow();
-            expect(gameboard.playArea[1][1]).toBe(false);
-
-            gameboard.setBoard();
-
-            gameboard.receiveAttack(1, 1);
-            expect(gameboard.playArea[1][1]).toBe(true);
         });
     });
 
     describe("Gameboard.prototype.hasLost", () => {
         test("returns true when all ships have sunk", () => {
             gameboard.putShip(createShip(2), 0, 0);
-            gameboard.setBoard();
 
             gameboard.receiveAttack(0, 0);
             gameboard.receiveAttack(0, 1);
@@ -413,17 +336,10 @@ describe("Gameboard prototype tests", () => {
         test("returns false when not all ships have sunk", () => {
             const ship = createShip(2);
             gameboard.putShip(ship, 0, 0);
-            gameboard.setBoard();
 
             gameboard.receiveAttack(0, 0);
 
             expect(gameboard.hasLost()).toBe(false);
-        });
-
-        test("throws an error when the board is not set", () => {
-            expect(() => gameboard.hasLost()).toThrow();
-            gameboard.setBoard();
-            expect(() => gameboard.hasLost()).not.toThrow();
         });
     });
 
@@ -434,7 +350,6 @@ describe("Gameboard prototype tests", () => {
             const ship2 = createShip(4);
             gameboard.putShip(ship, 0, 0);
             gameboard.putShip(ship2, 2, 1);
-            gameboard.setBoard();
             gameboard.receiveAttack(0, 0);
 
             // Reset gameboard
@@ -452,9 +367,6 @@ describe("Gameboard prototype tests", () => {
 
             // Check Gameboard.ships
             expect(gameboard.ships).toEqual(new Array());
-
-            // Check Gameboard.set
-            expect(gameboard.set).toBe(false);
         });
     });
 });
