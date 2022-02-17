@@ -12,7 +12,7 @@ function randomizeShips(event) {
 
     gameboard.reset();
     gameboard.randomize(player.fleet);
-    gameboard.visualizeShips();
+    gameboard.visualizeBoard();
 
     const shipUIs = Array.from(document.getElementsByClassName("ship"));
     shipUIs.forEach(shipUI => {

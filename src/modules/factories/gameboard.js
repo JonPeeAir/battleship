@@ -299,31 +299,27 @@ const boardProto = (() => {
             }
         },
 
-        locateShipsOnBoard() {
-            const board = new Array(this.size);
+        visualizeBoard() {
+            const shipsOnBoard = new Array(this.size);
             for (let i = 0; i < this.size; i++) {
-                board[i] = new Array(this.size).fill(" ");
+                shipsOnBoard[i] = new Array(this.size).fill(false);
             }
 
             this.ships.forEach(battleShip => {
                 for (let i = 0; i < battleShip.ship.length; i++) {
                     const row = battleShip.coords[i][0];
                     const col = battleShip.coords[i][1];
-                    board[row][col] = "O";
-                    if (battleShip.ship.hit[i]) {
-                        board[row][col] = "X";
-                    }
+                    shipsOnBoard[row][col] = true;
                 }
             });
 
-            // Return 10x10 array where spots are marked where ships are located
-            return board;
-        },
+            const attacksOnBoard = this.playArea;
 
-        visualizeShips() {
-            const board = this.locateShipsOnBoard();
-
-            let str = "                  SHIPS VISUALIZED\n";
+            let str = "                 GAMEBOARD VISUALIZED\n";
+            str = str.concat("            S - ship | H - hit | M - miss\n");
+            str = str.concat(
+                "        -----------------------------------------\n",
+            );
             str = str.concat(
                 "        | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |\n",
             );
@@ -331,36 +327,23 @@ const boardProto = (() => {
                 "    ----+---------------------------------------+\n",
             );
 
-            for (let i = 0; i < board.length; i++) {
-                let row = `      ${i} |`;
-                for (let j = 0; j < board[i].length; j++) {
-                    row = row.concat(` ${board[i][j]} |`);
+            for (let i = 0; i < shipsOnBoard.length; i++) {
+                let row = `    | ${i} |`;
+
+                for (let j = 0; j < shipsOnBoard[i].length; j++) {
+                    row = row.concat(
+                        ` ${
+                            attacksOnBoard[i][j] && shipsOnBoard[i][j]
+                                ? "H"
+                                : shipsOnBoard[i][j]
+                                ? "S"
+                                : attacksOnBoard[i][j]
+                                ? "M"
+                                : " "
+                        } |`,
+                    );
                 }
-                row = row.concat(
-                    "\n    ----+---------------------------------------+\n",
-                );
-                str = str.concat(row);
-            }
 
-            console.log(str);
-        },
-
-        visualizeAttacks() {
-            const board = this.playArea;
-
-            let str = "             ATTACKS RECEIVED VISUALIZED\n";
-            str = str.concat(
-                "        | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |\n",
-            );
-            str = str.concat(
-                "    ----+---------------------------------------+\n",
-            );
-
-            for (let i = 0; i < board.length; i++) {
-                let row = `      ${i} |`;
-                for (let j = 0; j < board[i].length; j++) {
-                    row = row.concat(` ${board[i][j] ? "X" : " "} |`);
-                }
                 row = row.concat(
                     "\n    ----+---------------------------------------+\n",
                 );
