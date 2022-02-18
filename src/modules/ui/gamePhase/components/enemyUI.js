@@ -1,3 +1,25 @@
+import { createBot } from "../../../factories/bot";
+
+const bot = createBot();
+function botMoveTest() {
+    const playerBoardUI = document.getElementById("your-board");
+    const player = playerBoardUI.player;
+
+    const moveData = bot.smartAttack(player);
+    const row = moveData.row;
+    const col = moveData.col;
+    const hit = moveData.hit;
+
+    const cellContent = playerBoardUI.rows[row].cells[col].children[0];
+    if (hit) {
+        cellContent.style.backgroundColor = "rgba(255, 0, 0, 0.25)";
+    } else {
+        cellContent.style.backgroundColor = "rgba(0, 0, 0, 0.25)";
+    }
+
+    console.log("player lost:", player.hasLost());
+}
+
 function createBoardLabel() {
     const boardLabel = document.createElement("h2");
     boardLabel.classList.add("board-label");
@@ -34,12 +56,13 @@ function createEnemyBoardUI(enemy, player) {
             cellContent.onclick = () => {
                 const hit = player.attack(enemy, i, j);
                 if (hit) {
-                    cellContent.style.backgroundColor = "rgba(0, 0, 0, 0.25)";
-                } else {
                     cellContent.style.backgroundColor = "rgba(255, 0, 0, 0.25)";
+                } else {
+                    cellContent.style.backgroundColor = "rgba(0, 0, 0, 0.25)";
                 }
+                console.log("enemy lost:", enemy.hasLost());
 
-                console.log(enemy.hasLost());
+                botMoveTest();
             };
 
             cell.appendChild(cellContent);
