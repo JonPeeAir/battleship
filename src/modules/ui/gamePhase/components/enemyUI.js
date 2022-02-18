@@ -17,7 +17,7 @@ function botMoveTest() {
         cellContent.style.backgroundColor = "rgba(0, 0, 0, 0.25)";
     }
 
-    console.log("player lost:", player.hasLost());
+    // console.log("player lost:", player.hasLost());
 }
 
 function createBoardLabel() {
@@ -60,7 +60,7 @@ function createEnemyBoardUI(enemy, player) {
                 } else {
                     cellContent.style.backgroundColor = "rgba(0, 0, 0, 0.25)";
                 }
-                console.log("enemy lost:", enemy.hasLost());
+                // console.log("enemy lost:", enemy.hasLost());
 
                 botMoveTest();
             };
