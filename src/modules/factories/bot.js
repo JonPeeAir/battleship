@@ -41,8 +41,10 @@ const botProto = (() => {
     }
 
     // Private helper method
-    // shipInfo must have a direction to use this method
     function shipIsDestroyed(board, shipInfo, moveData) {
+        // Initialize shipIsDestroyed to false
+        let shipIsDestroyed = false;
+
         const possibleMoves = {
             top: [-1, 0],
             left: [0, -1],
@@ -50,70 +52,60 @@ const botProto = (() => {
             right: [0, 1],
         };
 
-        const dirName = shipInfo.direction;
-        const dirValue = possibleMoves[dirName];
-
+        // Info about the first found cell in found ship
         const fsRow = shipInfo.row;
         const fsCol = shipInfo.col;
 
+        // Info about the attack
         const hit = moveData.hit;
         const thisRow = moveData.row;
         const thisCol = moveData.col;
 
-        let shipIsDestroyed = false;
+        // This case is only applicable when direction is undefined
+        let everyPossibleMoveIsTaken = true;
+        for (const direction in possibleMoves) {
+            const dirValue = possibleMoves[direction];
+            const row = fsRow + dirValue[0];
+            const col = fsCol + dirValue[1];
+            const cell = board[row] ? board[row][col] : undefined;
+            if (cell === false) everyPossibleMoveIsTaken = false;
+        }
 
-        if (shipInfo.oppDirection) {
-            if (hit) {
-                const nextRow = thisRow + dirValue[0];
-                const nextCol = thisCol + dirValue[1];
-                const nextCell =
-                    board[nextRow] === undefined
-                        ? undefined
-                        : board[nextRow][nextCol];
-                if (nextCell === undefined || nextCell === true) {
-                    shipIsDestroyed = true;
-                }
-            } else {
-                shipIsDestroyed = true;
-            }
-        } else {
-            if (hit) {
-                const nextRow = thisRow + dirValue[0];
-                const nextCol = thisCol + dirValue[1];
-                const nextCell =
-                    board[nextRow] === undefined
-                        ? undefined
-                        : board[nextRow][nextCol];
-                if (nextCell === undefined || nextCell === true) {
-                    const oppDirName = getOppDir(dirName);
-                    const oppDirValue = possibleMoves[oppDirName];
+        if (!shipInfo.direction) {
+            if (everyPossibleMoveIsTaken) shipIsDestroyed = true;
+            return shipIsDestroyed;
+        }
 
-                    const oppRow = fsRow + oppDirValue[0];
-                    const oppCol = fsCol + oppDirValue[1];
-                    const oppCell =
-                        board[oppRow] === undefined
-                            ? undefined
-                            : board[oppRow][oppCol];
+        // The code below is for when direction is defined
+        // Info about the ship direction
+        const dirName = shipInfo.direction;
+        const dirValue = possibleMoves[dirName];
 
-                    if (oppCell === undefined || oppCell === true) {
-                        shipIsDestroyed = true;
-                    }
-                }
-            } else {
-                const oppDirName = getOppDir(dirName);
-                const oppDirValue = possibleMoves[oppDirName];
+        // Info about one cell in the same direction
+        const nRow = thisRow + dirValue[0];
+        const nCol = thisCol + dirValue[1];
+        const nCell = board[nRow] ? board[nRow][nCol] : undefined;
 
-                const oppRow = fsRow + oppDirValue[0];
-                const oppCol = fsCol + oppDirValue[1];
-                const oppCell =
-                    board[oppRow] === undefined
-                        ? undefined
-                        : board[oppRow][oppCol];
+        // Info about one cell in the opposite direction from found ship cell
+        const oppDirName = getOppDir(dirName);
+        const oppDirValue = possibleMoves[oppDirName];
+        const oppRow = fsRow + oppDirValue[0];
+        const oppCol = fsCol + oppDirValue[1];
+        const oppCell = board[oppRow] ? board[oppRow][oppCol] : undefined;
 
-                if (oppCell === undefined || oppCell === true) {
-                    shipIsDestroyed = true;
-                }
-            }
+        // Made these variables for readability
+        const checkingOppDir = shipInfo.oppDirection;
+        const nextCellTaken = nCell === undefined || nCell;
+        const oppCellTaken = oppCell === undefined || oppCell;
+
+        // Cases where a ship is considered fully destroyed, given that direction is defined
+        const case1 = checkingOppDir && hit && nextCellTaken;
+        const case2 = checkingOppDir && !hit;
+        const case3 = !checkingOppDir && hit && nextCellTaken && oppCellTaken;
+        const case4 = !checkingOppDir && !hit && oppCellTaken;
+
+        if (case1 || case2 || case3 || case4) {
+            shipIsDestroyed = true;
         }
 
         return shipIsDestroyed;
@@ -125,24 +117,121 @@ const botProto = (() => {
         smartAttack(enemy) {
             let moveData = {};
 
-            if (this.foundShip && this.foundShip.oppDirection) {
-                const fsRow = this.foundShip.row;
-                const fsCol = this.foundShip.col;
-                const possibleMoves = {
-                    top: [-1, 0],
-                    left: [0, -1],
-                    bottom: [1, 0],
-                    right: [0, 1],
-                };
+            // CASE: No foundShip
+            if (!this.foundShip) {
+                return this.randomAttack(enemy);
+            }
 
-                const dirName = this.foundShip.direction;
-                const dirValue = possibleMoves[dirName];
+            const fsRow = this.foundShip.row;
+            const fsCol = this.foundShip.col;
+            const possibleMoves = {
+                top: [-1, 0],
+                left: [0, -1],
+                bottom: [1, 0],
+                right: [0, 1],
+            };
 
-                let row = fsRow + dirValue[0];
-                let col = fsCol + dirValue[1];
+            // CASE: foundShip but direction is unknown
+            if (this.foundShip && !this.foundShip.direction) {
+                for (const direction in possibleMoves) {
+                    const dirVal = possibleMoves[direction];
+                    const row = fsRow + dirVal[0];
+                    const col = fsCol + dirVal[1];
 
+                    try {
+                        // This line may throw an error
+                        const hit = this.attack(enemy, row, col);
+
+                        // The line below will run if no errors were thrown
+                        moveData = { hit, row, col };
+
+                        const board = enemy.gameboard.playArea;
+                        const nR = row + dirVal[0]; // next row
+                        const nC = col + dirVal[1]; // next col
+                        const nCell = board[nR] ? board[nR][nC] : undefined;
+                        const nCellTaken = nCell === undefined || nCell;
+
+                        if (hit) {
+                            this.foundShip.direction = direction;
+                        }
+
+                        if (shipIsDestroyed(board, this.foundShip, moveData)) {
+                            this.foundShip = undefined;
+                        } else if (hit && nCellTaken) {
+                            this.foundShip.direction = getOppDir(direction);
+                            this.foundShip.oppDirection = true;
+                        }
+
+                        break;
+                    } catch (error) {
+                        continue;
+                    }
+                }
+
+                return moveData;
+            }
+
+            const dir = this.foundShip.direction;
+            const dirValue = possibleMoves[dir];
+
+            let row = fsRow + dirValue[0];
+            let col = fsCol + dirValue[1];
+
+            // CASE: foundShip and direction is known but we haven't checked the opposite direction yet
+            if (
+                this.foundShip &&
+                this.foundShip.direction &&
+                !this.foundShip.oppDirection
+            ) {
                 while (true) {
-                    // Ship is destroyed but you need to make a move, so make random move;
+                    // If coords are out of board, change directions, and attack
+                    // one unit in the opposite direction
+                    if (outOfBoard(row, col, enemy.gameboard.size)) {
+                        this.foundShip.direction = getOppDir(dir);
+                        this.foundShip.oppDirection = true;
+                        moveData = this.smartAttack(enemy);
+                        break;
+                    } else {
+                        try {
+                            // This line might throw an error
+                            const hit = this.attack(enemy, row, col);
+
+                            // The lines below will run if no errors were thrown
+                            moveData = { hit, row, col };
+                            const move = moveData;
+
+                            const board = enemy.gameboard.playArea;
+                            const shipInfo = this.foundShip;
+                            const nR = row + dirValue[0]; // next row
+                            const nC = col + dirValue[1]; // next col
+                            const nCell = board[nR] ? board[nR][nC] : undefined;
+                            const nCellTaken = nCell === undefined || nCell;
+
+                            if (shipIsDestroyed(board, shipInfo, moveData)) {
+                                this.foundShip = undefined;
+                            } else if (!hit || (hit && nCellTaken)) {
+                                this.foundShip.direction = getOppDir(dir);
+                                this.foundShip.oppDirection = true;
+                            }
+
+                            break;
+                        } catch (error) {
+                            row += dirValue[0];
+                            col += dirValue[1];
+                            continue;
+                        }
+                    }
+                }
+
+                return moveData;
+            }
+
+            // CASE: foundShip, direction is known, and we are now checking the opposite direction
+            if (this.foundShip && this.foundShip.oppDirection) {
+                while (true) {
+                    // If coords are out of the board, the ship should now be
+                    // destroyed. But you need to make a move so make a random
+                    // move
                     if (outOfBoard(row, col, enemy.gameboard.size)) {
                         this.foundShip = undefined;
                         moveData = this.randomAttack(enemy);
@@ -157,24 +246,6 @@ const botProto = (() => {
                             const board = enemy.gameboard.playArea;
                             const shipInfo = this.foundShip;
 
-                            if (hit) {
-                                console.log(
-                                    "Checking",
-                                    dirName,
-                                    "and hit",
-                                    row,
-                                    col,
-                                );
-                            } else {
-                                console.log(
-                                    "Checking",
-                                    dirName,
-                                    "and missed",
-                                    row,
-                                    col,
-                                );
-                            }
-
                             if (shipIsDestroyed(board, shipInfo, moveData)) {
                                 this.foundShip = undefined;
                             }
@@ -187,193 +258,8 @@ const botProto = (() => {
                         }
                     }
                 }
-            } else if (this.foundShip && this.foundShip.direction) {
-                const fsRow = this.foundShip.row;
-                const fsCol = this.foundShip.col;
-                const possibleMoves = {
-                    top: [-1, 0],
-                    left: [0, -1],
-                    bottom: [1, 0],
-                    right: [0, 1],
-                };
-
-                const dir = this.foundShip.direction;
-                const dirValue = possibleMoves[dir];
-
-                let nRow = fsRow + dirValue[0];
-                let nCol = fsCol + dirValue[1];
-
-                while (true) {
-                    // If coords are out of board, attack one unit in the opposite direction
-                    if (outOfBoard(nRow, nCol, enemy.gameboard.size)) {
-                        this.foundShip.direction = getOppDir(dir);
-                        this.foundShip.oppDirection = true;
-
-                        const oppDir = getOppDir(dir);
-                        const newDirValue = possibleMoves[oppDir];
-                        let oppRow = fsRow + newDirValue[0];
-                        let oppCol = fsCol + newDirValue[1];
-
-                        // Ship is destroyed but you need to make a move, so make a random move
-                        if (outOfBoard(oppRow, oppCol, enemy.gameboard.size)) {
-                            this.foundShip = undefined;
-                            moveData = this.randomAttack(enemy);
-                            break;
-                        } else {
-                            try {
-                                // This line may throw an error
-                                const hit = this.attack(enemy, oppRow, oppCol);
-
-                                // The lines below will run if no errors were thrown
-                                moveData = { hit, row: oppRow, col: oppCol };
-                                if (!hit) this.foundShip = undefined;
-                            } catch (error) {
-                                // If you can't hit one unit in the opposite direction, ship should now be destroyed
-                                // So make a random move
-                                this.foundShip = undefined;
-                                moveData = this.randomAttack(enemy);
-                            }
-                        }
-                        // Break in the end since we only need to attack in the opposite direction once
-                        break;
-                    } else {
-                        try {
-                            // This line might throw an error
-                            const hit = this.attack(enemy, nRow, nCol);
-
-                            // The lines below will run if no errors were thrown
-                            moveData = { hit, row: nRow, col: nCol };
-                            const move = moveData;
-
-                            const board = enemy.gameboard.playArea;
-                            const shipInfo = this.foundShip;
-                            const nNRow = nRow + dirValue[0];
-                            const nNCol = nCol + dirValue[1];
-                            const nCell =
-                                board[nNRow] === undefined
-                                    ? undefined
-                                    : board[nNRow][nNCol];
-
-                            if (hit) {
-                                console.log(
-                                    "Continued",
-                                    dir,
-                                    "and hit",
-                                    nRow,
-                                    nCol,
-                                );
-                                if (shipIsDestroyed(board, shipInfo, move)) {
-                                    this.foundShip = undefined;
-                                } else if (
-                                    nCell === undefined ||
-                                    nCell === true
-                                ) {
-                                    this.foundShip.direction = getOppDir(dir);
-                                    this.foundShip.oppDirection = true;
-                                }
-                            } else if (!hit) {
-                                console.log(
-                                    "Continued",
-                                    dir,
-                                    "and missed",
-                                    nRow,
-                                    nCol,
-                                );
-                                if (shipIsDestroyed(board, shipInfo, move)) {
-                                    this.foundShip = undefined;
-                                } else {
-                                    this.foundShip.direction = getOppDir(dir);
-                                    this.foundShip.oppDirection = true;
-                                }
-                            }
-
-                            break;
-                        } catch (error) {
-                            nRow += dirValue[0];
-                            nCol += dirValue[1];
-                            continue;
-                        }
-                    }
-                }
-            } else if (this.foundShip) {
-                const fsRow = this.foundShip.row;
-                const fsCol = this.foundShip.col;
-                const possibleMoves = {
-                    top: [-1, 0],
-                    left: [0, -1],
-                    bottom: [1, 0],
-                    right: [0, 1],
-                };
-
-                let smartAttackSuccess = false;
-                for (const direction in possibleMoves) {
-                    const dirValue = possibleMoves[direction];
-                    const row = fsRow + dirValue[0];
-                    const col = fsCol + dirValue[1];
-                    try {
-                        // This line may throw an error
-                        const hit = this.attack(enemy, row, col);
-
-                        // The line below will run if no errors were thrown
-                        moveData = { hit, row, col };
-                        const board = enemy.gameboard.playArea;
-                        const nRow = row + dirValue[0];
-                        const nCol = col + dirValue[1];
-                        console.log(board, { nRow, nCol });
-                        const nCell =
-                            board[nRow] === undefined
-                                ? undefined
-                                : board[nRow][nCol];
-                        console.log({ nCell });
-
-                        if (hit) {
-                            console.log(
-                                "Attacked",
-                                direction,
-                                "and hit",
-                                row,
-                                col,
-                            );
-                            this.foundShip.direction = direction;
-                            const shipInfo = this.foundShip;
-
-                            if (shipIsDestroyed(board, shipInfo, moveData)) {
-                                this.foundShip = undefined;
-                            } else if (nCell === undefined || nCell === true) {
-                                this.foundShip.direction = getOppDir(direction);
-                                this.foundShip.oppDirection = true;
-                            }
-                        } else {
-                            console.log(
-                                "Attacked",
-                                direction,
-                                "and missed",
-                                row,
-                                col,
-                            );
-                        }
-                        smartAttackSuccess = true;
-                        break;
-                    } catch (error) {
-                        if (error instanceof TypeError) {
-                            console.log(error, row, col);
-                        }
-                        continue;
-                    }
-                }
-
-                // If all possible moves are not available, then the ship must already be destroyed
-                // so make a random move
-                if (!smartAttackSuccess) {
-                    this.foundShip = undefined;
-                    moveData = this.randomAttack(enemy);
-                }
-            } else {
-                // There is no foundShip so do a random move
-                moveData = this.randomAttack(enemy);
             }
 
-            // enemy.gameboard.visualizeBoard();
             return moveData;
         },
 
@@ -383,17 +269,21 @@ const botProto = (() => {
                 // Get random coords
                 const row = randFrom(0, 9);
                 const col = randFrom(0, 9);
+
                 try {
                     // This line may throw an error
                     const hit = this.attack(enemy, row, col);
+
                     // The lines below only run if no errors were thrown
-                    if (hit) {
-                        console.log("Found ship from random move", row, col);
-                        this.foundShip = createShipInfo(row, col);
-                    } else {
-                        console.log("Made random move", row, col);
-                    }
                     moveData = { hit, row, col };
+                    if (hit) {
+                        this.foundShip = createShipInfo(row, col);
+                        const board = enemy.gameboard.playArea;
+                        if (shipIsDestroyed(board, this.foundShip, moveData)) {
+                            this.foundShip = undefined;
+                        }
+                    }
+
                     break;
                 } catch (e) {
                     // If there is an error, try to get a new location
