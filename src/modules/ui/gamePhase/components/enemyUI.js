@@ -47,6 +47,7 @@ function createEnemyBoardUI(enemy, player) {
             // Create cell content
             const cellContent = document.createElement("div");
             cellContent.classList.add("cell-content");
+            cellContent.classList.add("target");
 
             // Make cell content aware of its position in the board
             cellContent.row = i;
@@ -59,6 +60,7 @@ function createEnemyBoardUI(enemy, player) {
                 } else {
                     cellContent.style.backgroundColor = "rgba(0, 0, 0, 0.25)";
                 }
+                cellContent.classList.add("isHit");
 
                 botMoveTest();
 

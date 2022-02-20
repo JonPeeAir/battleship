@@ -3,8 +3,7 @@ import { createFleetUI } from "./components/fleetUI";
 import { createGameboardUI } from "./components/gameboardUI";
 import { createGameButtons } from "./components/gameButtons";
 
-const bot = createBot();
-function renderSetupPhaseFor(player, enemy = bot) {
+function renderSetupPhaseFor(player, enemy = createBot()) {
     const setupPhase = document.createElement("div");
     setupPhase.id = "setup-phase";
     setupPhase.classList.add("setup-phase");

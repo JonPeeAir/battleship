@@ -20,6 +20,7 @@ function createWinnerScreen() {
     playAgainBtn.classList.add("winner-screen-btn");
     playAgainBtn.onclick = () => {
         const player = document.getElementById("your-board").player;
+        player.reset();
         const main = document.getElementById("main");
         main.innerHTML = "";
         main.appendChild(renderSetupPhaseFor(player));

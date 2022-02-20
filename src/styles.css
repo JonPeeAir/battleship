@@ -144,6 +144,16 @@ td {
     background-color: white;
 }
 
+td:hover > .target {
+    background-color: rgba(0, 255, 0, 0.25);
+    border: 1px solid black;
+}
+
+td:hover > .target.isHit {
+    background-color: none;
+    border: none;
+}
+
 .vertical-ship {
     flex-direction: column;
 }

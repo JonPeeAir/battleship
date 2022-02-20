@@ -31,6 +31,11 @@ const playerProto = (() => {
         hasLost() {
             return this.fleet.every(ship => ship.isSunk());
         },
+
+        reset() {
+            this.gameboard.reset();
+            this.fleet.forEach(ship => ship.reset());
+        },
     };
 })();
 
