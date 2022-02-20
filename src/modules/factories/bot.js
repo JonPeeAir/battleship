@@ -124,7 +124,7 @@ const botProto = (() => {
 
             const fsRow = this.foundShip.row;
             const fsCol = this.foundShip.col;
-            const possibleMoves = {
+            const directions = {
                 top: [-1, 0],
                 left: [0, -1],
                 bottom: [1, 0],
@@ -133,8 +133,8 @@ const botProto = (() => {
 
             // CASE: foundShip but direction is unknown
             if (this.foundShip && !this.foundShip.direction) {
-                for (const direction in possibleMoves) {
-                    const dirVal = possibleMoves[direction];
+                for (const direction in directions) {
+                    const dirVal = directions[direction];
                     const row = fsRow + dirVal[0];
                     const col = fsCol + dirVal[1];
 
@@ -172,7 +172,7 @@ const botProto = (() => {
             }
 
             const dir = this.foundShip.direction;
-            const dirValue = possibleMoves[dir];
+            const dirValue = directions[dir];
 
             let row = fsRow + dirValue[0];
             let col = fsCol + dirValue[1];

@@ -1,9 +1,10 @@
-import { createPlayer } from "../../factories/player";
+import { createBot } from "../../factories/bot";
 import { createFleetUI } from "./components/fleetUI";
 import { createGameboardUI } from "./components/gameboardUI";
 import { createGameButtons } from "./components/gameButtons";
 
-function renderSetupPhaseFor(player, enemy = createPlayer("p2")) {
+const bot = createBot();
+function renderSetupPhaseFor(player, enemy = bot) {
     const setupPhase = document.createElement("div");
     setupPhase.id = "setup-phase";
     setupPhase.classList.add("setup-phase");

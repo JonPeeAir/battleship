@@ -1,4 +1,5 @@
 import { createBot } from "../../../factories/bot";
+import { displayWinner } from "./winner";
 
 const bot = createBot();
 function botMoveTest() {
@@ -16,8 +17,6 @@ function botMoveTest() {
     } else {
         cellContent.style.backgroundColor = "rgba(0, 0, 0, 0.25)";
     }
-
-    // console.log("player lost:", player.hasLost());
 }
 
 function createBoardLabel() {
@@ -60,9 +59,14 @@ function createEnemyBoardUI(enemy, player) {
                 } else {
                     cellContent.style.backgroundColor = "rgba(0, 0, 0, 0.25)";
                 }
-                // console.log("enemy lost:", enemy.hasLost());
 
                 botMoveTest();
+
+                if (player.hasLost()) {
+                    displayWinner(enemy.name);
+                } else if (enemy.hasLost()) {
+                    displayWinner(player.name);
+                }
             };
 
             cell.appendChild(cellContent);
