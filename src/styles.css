@@ -25,6 +25,7 @@ body {
     height: 100vh;
     width: 100vw;
     background-color: var(--fourColor);
+    overflow: hidden;
 }
 
 .game-title {
@@ -36,12 +37,147 @@ body {
     color: var(--oneColor);
 }
 
+/* -------------------------
+    SPLASH SCREEN STYLES
+------------------------- */
+
+.splash-screen {
+    width: 100vw;
+    height: 100vh;
+    background-color: var(--fourColor);
+    color: var(--oneColor);
+    font-family: var(--oneFont);
+    font-size: 12rem;
+
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    display: grid;
+    place-items: center;
+    grid-template-rows: 1fr 1fr;
+}
+
+.splash-title {
+    place-self: end center;
+    opacity: 0;
+    animation: fade-in 3s 0.5s forwards;
+    cursor: default;
+
+    position: relative;
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.play-btn {
+    margin-top: 2rem;
+    width: fit-content;
+    height: fit-content;
+    border: none;
+    cursor: pointer;
+
+    position: relative;
+    left: -10%;
+    transform: translateX(-50%);
+
+    place-self: start start;
+
+    background-color: inherit;
+    transition: background-color 0.2s;
+
+    animation: sail 5s 3s ease-out forwards;
+}
+
+.play-btn::after {
+    content: "Click on the ship to play";
+    width: 500px;
+    font-size: 3rem;
+    font-family: var(--oneFont);
+    position: absolute;
+    bottom: -6rem;
+    left: -6rem;
+    pointer-events: none;
+
+    opacity: 0;
+    animation: fade-in 0.2s 12s forwards;
+}
+
+.play-btn > img {
+    width: 300px;
+    animation: boat-rock 2.5s infinite;
+}
+
+.play-btn:disabled {
+    cursor: default;
+}
+
+.play-btn:disabled:hover {
+    background-color: inherit;
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes sail {
+    from {
+        left: -10%;
+    }
+
+    to {
+        left: 50%;
+    }
+}
+
+@keyframes boat-rock {
+    0% {
+        transform: translateY(5%) rotateZ(0deg);
+    }
+
+    50% {
+        transform: translateY(-5%) rotateZ(-2deg);
+    }
+
+    100% {
+        transform: translateY(5%) rotateZ(0deg);
+    }
+}
+
+.animate-remove {
+    animation: push-out 1s cubic-bezier(0.7, -0.5, 0.5, 1) forwards;
+}
+
+@keyframes push-out {
+    from {
+        transform: scale(1);
+        border-radius: 0px;
+    }
+
+    to {
+        transform: scale(0);
+        border-radius: 10px;
+    }
+}
+
 /* ---------------------
     MAIN MENU STYLES
 --------------------- */
 
 .main-menu {
     /* border: 1px solid black; */
+    margin-top: 2rem;
 
     display: grid;
     grid-template-rows: 0.25fr 1fr;
