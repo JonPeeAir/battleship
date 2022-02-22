@@ -1,3 +1,6 @@
+import { createPlayer } from "../../factories/player";
+import { renderSetupPhaseFor } from "../setupPhase/setupPhase";
+
 function createMainMenu() {
     const mainMenu = document.createElement("div");
     mainMenu.id = "main-menu";
@@ -32,6 +35,14 @@ function createMainMenu() {
     botGameBtn.id = "bot-game-btn";
     botGameBtn.classList.add("menu-btn");
     botGameBtn.innerHTML = `<i class="bi bi-person"></i> <br> ------- <br> <i class="bi bi-robot"></i>`;
+    botGameBtn.onclick = () => {
+        const player = createPlayer("player");
+        const setupPhase = renderSetupPhaseFor(player);
+
+        const main = document.getElementById("main");
+        main.innerHTML = "";
+        main.appendChild(setupPhase);
+    };
 
     const botGameLabel = document.createElement("p");
     botGameLabel.id = "bot-game-label";

@@ -13,3 +13,11 @@ body.appendChild(createSplashScreen());
 const mainMenu = createMainMenu();
 const main = document.getElementById("main");
 main.append(mainMenu);
+
+const gameTitle = document.getElementById("game-title");
+gameTitle.onclick = () => {
+    const mainMenu = createMainMenu();
+    const main = document.getElementById("main");
+    main.innerHTML = "";
+    main.append(mainMenu);
+};

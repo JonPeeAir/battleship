@@ -31,10 +31,10 @@ body {
 .game-title {
     padding: 2rem 0;
     text-align: center;
-
     font-family: var(--oneFont);
     font-size: 5rem;
     color: var(--oneColor);
+    cursor: default;
 }
 
 /* -------------------------
@@ -246,7 +246,7 @@ body {
 
 .setup-phase {
     /* border: 1px solid black; */
-    padding: 2rem;
+    padding: 0 2rem;
 
     display: flex;
     flex-direction: column;
