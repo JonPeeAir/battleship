@@ -1,22 +1,112 @@
+@import url("https://fonts.googleapis.com/css2?family=Germania+One&family=Open+Sans+Condensed:wght@700&display=swap");
+
+:root {
+    --oneFont: "Germania One", cursive;
+    --twoFont: "Open Sans Condensed", sans-serif;
+
+    --oneColor: #274c77;
+    --twoColor: #e7ecef;
+    --threeColor: #6096ba;
+    --fourColor: #a3cef1;
+    --fiveColor: #8b8c89;
+}
+
 *,
 *::before,
 *::after {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+
+    color: var(--oneColor);
 }
 
 body {
     height: 100vh;
     width: 100vw;
-
-    /* background-color: rgb(132, 196, 255); */
+    background-color: var(--fourColor);
 }
 
 .game-title {
-    padding: 1rem 0;
+    padding: 2rem 0;
     text-align: center;
+
+    font-family: var(--oneFont);
+    font-size: 5rem;
+    color: var(--oneColor);
 }
+
+/* ---------------------
+    MAIN MENU STYLES
+--------------------- */
+
+.main-menu {
+    /* border: 1px solid black; */
+
+    display: grid;
+    grid-template-rows: 0.25fr 1fr;
+    grid-template-columns: 1fr 1fr;
+}
+
+.menu-instructions {
+    font-family: var(--twoFont);
+    font-size: 2rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
+
+    place-self: end center;
+    grid-column: 1 / 3;
+}
+
+.gamemode-container {
+    place-self: center;
+    margin: 0rem 3.2rem;
+
+    display: grid;
+    place-items: center;
+    gap: 1.5rem;
+}
+
+#local-game-container {
+    place-self: start end;
+}
+
+#bot-game-container {
+    place-self: start start;
+}
+
+.menu-btn {
+    width: 18rem;
+    height: 24rem;
+    font-size: 5.5rem;
+    line-height: 0.8;
+
+    border: 1px solid black;
+    background-color: var(--twoColor);
+    border-radius: 10px;
+
+    transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.menu-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0px 0px 10px 3px rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+}
+
+.menu-btn:active {
+    transform: scale(1.025);
+    box-shadow: 0px 0px 5px 1.5px rgba(0, 0, 0, 0.25);
+}
+
+.mode-label {
+    font-family: var(--twoFont);
+    font-size: 1.5rem;
+}
+
+/* -----------------------
+    SETUP PHASE STYLES
+----------------------- */
 
 .setup-phase {
     /* border: 1px solid black; */
@@ -198,6 +288,10 @@ td:hover > .target.isHit {
     padding: 0.5rem;
     font-size: 2.5rem;
 }
+
+/* ----------------------
+    GAME PHASE STYLES
+---------------------- */
 
 .game-phase {
     padding: 2rem;
