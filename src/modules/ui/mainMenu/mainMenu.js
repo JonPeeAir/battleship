@@ -1,5 +1,6 @@
 import { createPlayer } from "../../factories/player";
 import { renderSetupPhaseFor } from "../setupPhase/setupPhase";
+import { createPlayerNamesPrompt } from "./components/playerNames";
 
 function createMainMenu() {
     const mainMenu = document.createElement("div");
@@ -36,12 +37,9 @@ function createMainMenu() {
     botGameBtn.classList.add("menu-btn");
     botGameBtn.innerHTML = `<i class="bi bi-person"></i> <br> ------- <br> <i class="bi bi-robot"></i>`;
     botGameBtn.onclick = () => {
-        const player = createPlayer("player");
-        const setupPhase = renderSetupPhaseFor(player);
-
         const main = document.getElementById("main");
         main.innerHTML = "";
-        main.appendChild(setupPhase);
+        main.appendChild(createPlayerNamesPrompt("botGame"));
     };
 
     const botGameLabel = document.createElement("p");

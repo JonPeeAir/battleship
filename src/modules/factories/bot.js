@@ -296,12 +296,12 @@ const botProto = (() => {
     });
 })();
 
-function createBot() {
+function createBot(name = "Bot") {
     let foundShip = undefined;
 
     // Create a bot object with the properties of a player object together with an additional
     // property called "foundShip" with a prototype of botProto
-    const bot = Object.assign(Object.create(botProto), createPlayer("bot"), {
+    const bot = Object.assign(Object.create(botProto), createPlayer(name), {
         foundShip,
     });
 

@@ -13,9 +13,13 @@ function botMoveTest() {
 
     const cellContent = playerBoardUI.rows[row].cells[col].children[0];
     if (hit) {
-        cellContent.style.backgroundColor = "rgba(255, 0, 0, 0.25)";
+        cellContent.style.backgroundColor = "rgb(237, 142, 142)";
     } else {
-        cellContent.style.backgroundColor = "rgba(0, 0, 0, 0.25)";
+        const missIcon = document.createElement("p");
+        missIcon.classList.add("miss-icon");
+        missIcon.textContent = "·";
+
+        cellContent.appendChild(missIcon);
     }
 }
 
@@ -56,9 +60,13 @@ function createEnemyBoardUI(enemy, player) {
             cellContent.onclick = () => {
                 const hit = player.attack(enemy, i, j);
                 if (hit) {
-                    cellContent.style.backgroundColor = "rgba(255, 0, 0, 0.25)";
+                    cellContent.style.backgroundColor = "rgb(237, 142, 142)";
                 } else {
-                    cellContent.style.backgroundColor = "rgba(0, 0, 0, 0.25)";
+                    const missIcon = document.createElement("p");
+                    missIcon.classList.add("miss-icon");
+                    missIcon.textContent = "·";
+
+                    cellContent.appendChild(missIcon);
                 }
                 cellContent.classList.add("isHit");
 

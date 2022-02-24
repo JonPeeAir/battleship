@@ -4,8 +4,8 @@ import { renderGamePhaseFor } from "../../gamePhase/gamePhase";
 function randomizeShips(event) {
     event.target.disabled = true;
 
-    const gameContent = document.getElementById("game-content");
-    const player = gameContent.player;
+    const setupPhase = document.getElementById("setup-phase");
+    const player = setupPhase.players.p1;
 
     const gameboardUI = document.getElementById("gameboard");
     const gameboard = gameboardUI.gameboard;
@@ -120,9 +120,9 @@ function createGameButtons() {
     startBtn.disabled = true;
     startBtn.textContent = "START GAME";
     startBtn.onclick = () => {
-        const gameContent = document.getElementById("game-content");
-        const player = gameContent.player;
-        const enemy = gameContent.enemy;
+        const setupPhase = document.getElementById("setup-phase");
+        const player = setupPhase.players.p1;
+        const enemy = setupPhase.players.p2;
 
         const main = document.getElementById("main");
         main.innerHTML = "";

@@ -35,7 +35,7 @@ function dragStartHandler(event) {
             const row = coord[0];
             const col = coord[1];
             const borderCell = domCells[row][col];
-            borderCell.style.backgroundColor = "rgba(255, 0, 0, 0.25)";
+            borderCell.style.backgroundColor = "rgb(237, 142, 142)";
         });
     });
 
@@ -196,7 +196,7 @@ function dragOverHandler(event) {
             const row = shipIsVertical ? hRow + i : hRow;
             const col = shipIsVertical ? hCol : hCol + i;
             let cellContent = domCells[row][col];
-            cellContent.style.backgroundColor = "rgba(0, 255, 0, 0.25)";
+            cellContent.style.backgroundColor = "rgb(142, 237, 142)";
         }
     } catch (error) {
         return;

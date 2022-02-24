@@ -17,7 +17,7 @@ function createFleetUI(fleet) {
 
     // Create fleetLabel
     const fleetLabel = document.createElement("h2");
-    fleetLabel.innerHTML = `Fleet <span class="fleet-info"> <img src="${InfoIcon}" alt="info-circle" width="20px"/> </span>`;
+    fleetLabel.innerHTML = `Fleet <span class="fleet-info"> <img src="${InfoIcon}" alt="info-circle" width="25px"/> </span>`;
     fleetUI.appendChild(fleetLabel);
 
     fleet.forEach(ship => {
