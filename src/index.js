@@ -7,8 +7,8 @@ import { createSplashScreen } from "./modules/ui/splashscreen";
 // Asset imports
 import "./styles.css";
 
-// const body = document.querySelector("body");
-// body.appendChild(createSplashScreen());
+const body = document.querySelector("body");
+body.appendChild(createSplashScreen());
 
 const mainMenu = createMainMenu();
 const main = document.getElementById("main");

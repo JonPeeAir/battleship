@@ -1,6 +1,7 @@
+import { createMainMenu } from "../../mainMenu/mainMenu";
 import { renderSetupPhaseFor } from "../../setupPhase/setupPhase";
 
-function createWinnerScreen() {
+function createWinnerScreen(player, enemy) {
     const winnerContainer = document.createElement("div");
     winnerContainer.id = "winner-container";
     winnerContainer.classList.add("winner-container");
@@ -19,17 +20,24 @@ function createWinnerScreen() {
     playAgainBtn.id = "play-again-btn";
     playAgainBtn.classList.add("winner-screen-btn");
     playAgainBtn.onclick = () => {
-        const player = document.getElementById("your-board").player;
         player.reset();
+        enemy.reset();
+        enemy.gameboard.randomize(enemy.fleet);
         const main = document.getElementById("main");
         main.innerHTML = "";
-        main.appendChild(renderSetupPhaseFor(player));
+        main.appendChild(renderSetupPhaseFor(player, enemy));
     };
 
     const mainMenuBtn = document.createElement("button");
     mainMenuBtn.textContent = "Main Menu";
     mainMenuBtn.id = "main-menu-btn";
     mainMenuBtn.classList.add("winner-screen-btn");
+    mainMenuBtn.onclick = () => {
+        const mainMenu = createMainMenu();
+        const main = document.getElementById("main");
+        main.innerHTML = "";
+        main.append(mainMenu);
+    };
 
     winnerScreen.append(winnerText, mainMenuBtn, playAgainBtn);
 

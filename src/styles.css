@@ -588,13 +588,14 @@ td {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1rem;
 }
 
 .game-description {
-    font-size: 1.5rem;
+    font-size: 2.5rem;
     font-family: var(--twoFont);
     font-weight: bold;
+    cursor: default;
+    user-select: none;
 }
 
 .player-area {
@@ -656,6 +657,45 @@ td:hover > .target.isHit {
     font-family: var(--twoFont);
     color: var(--oneColor);
     cursor: default;
+    user-select: none;
+}
+
+.ship-hit {
+    /* box-shadow: 0px 0px 20px 5px red; */
+    animation: red-glow 1s forwards;
+}
+
+@keyframes red-glow {
+    0% {
+        box-shadow: 0px 0px 0px 0px red;
+    }
+
+    50% {
+        box-shadow: 0px 0px 20px 5px red;
+    }
+
+    100% {
+        box-shadow: 0px 0px 0px 0px red;
+    }
+}
+
+.ship-miss {
+    /* box-shadow: 0px 0px 20px 5px grey; */
+    animation: grey-glow 1s forwards;
+}
+
+@keyframes grey-glow {
+    0% {
+        box-shadow: 0px 0px 0px 0px grey;
+    }
+
+    50% {
+        box-shadow: 0px 0px 20px 5px grey;
+    }
+
+    100% {
+        box-shadow: 0px 0px 0px 0px grey;
+    }
 }
 
 .winner-container {
@@ -677,10 +717,11 @@ td:hover > .target.isHit {
 .winner-screen {
     min-width: 800px;
     width: 50%;
-    min-height: 500px;
-    height: 50%;
-    background-color: white;
-    border-radius: 5px;
+    min-height: 400px;
+    height: 30%;
+    background-color: var(--oneColor);
+    border: 10px solid var(--fourColor);
+    border-radius: 20px;
     box-shadow: 0px 5px 20px 0px rgba(0, 0, 0, 0.5);
 
     display: grid;
@@ -690,6 +731,8 @@ td:hover > .target.isHit {
 
 .winner-text {
     font-size: 3.5rem;
+    font-family: var(--oneFont);
+    color: var(--twoColor);
     margin: 1.5rem;
     cursor: default;
 
@@ -708,6 +751,16 @@ td:hover > .target.isHit {
 .winner-screen-btn {
     margin: 1.2rem 1rem;
     font-size: 2rem;
+    font-family: var(--twoFont);
     padding: 1rem 2rem;
     cursor: pointer;
+    background-color: var(--twoColor);
+    border: 2px solid var(--threeColor);
+    border-radius: 10px;
+
+    transition: transform 0.05s;
+}
+
+.winner-screen-btn:active {
+    transform: translateY(5%);
 }

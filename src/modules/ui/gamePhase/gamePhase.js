@@ -21,7 +21,7 @@ function renderGamePhaseFor(player, enemy) {
     gameDescription.classList.add("game-description");
     gameDescription.textContent = "It's your turn";
 
-    const winnerScreen = createWinnerScreen();
+    const winnerScreen = createWinnerScreen(player, enemy);
 
     gamePhase.append(gameContent, gameDescription, winnerScreen);
 

@@ -1,8 +1,8 @@
 import { createBot } from "../../../factories/bot";
 import { displayWinner } from "./winner";
 
-const bot = createBot();
-function botMoveTest() {
+// const bot = createBot();
+function makeBotMove(bot) {
     const playerBoardUI = document.getElementById("your-board");
     const player = playerBoardUI.player;
 
@@ -11,15 +11,74 @@ function botMoveTest() {
     const col = moveData.col;
     const hit = moveData.hit;
 
+    const gameDescription = document.getElementById("game-description");
+
     const cellContent = playerBoardUI.rows[row].cells[col].children[0];
     if (hit) {
         cellContent.style.backgroundColor = "rgb(237, 142, 142)";
+        playerBoardUI.classList.remove("ship-hit", "ship-miss");
+        setTimeout(() => {
+            playerBoardUI.classList.add("ship-hit");
+            gameDescription.textContent = `${bot.name} hits a ship!!`;
+        }, 100);
     } else {
         const missIcon = document.createElement("p");
         missIcon.classList.add("miss-icon");
         missIcon.textContent = "·";
 
         cellContent.appendChild(missIcon);
+
+        playerBoardUI.classList.remove("ship-hit", "ship-miss");
+        setTimeout(() => {
+            playerBoardUI.classList.add("ship-miss");
+            gameDescription.textContent = `${bot.name} misses`;
+        }, 100);
+    }
+}
+
+function performAttack(cell, player, enemy) {
+    const gameDescription = document.getElementById("game-description");
+    const attackBoard = document.getElementById("opponent-board");
+
+    const hit = player.attack(enemy, cell.row, cell.col);
+    if (hit) {
+        cell.style.backgroundColor = "rgb(237, 142, 142)";
+        gameDescription.textContent = "It's a hit!!";
+    } else {
+        const missIcon = document.createElement("p");
+        missIcon.classList.add("miss-icon");
+        missIcon.textContent = "·";
+
+        cell.appendChild(missIcon);
+
+        gameDescription.textContent = "You missed";
+    }
+    cell.classList.add("isHit");
+    attackBoard.style.pointerEvents = "none";
+    document
+        .querySelectorAll("*")
+        .forEach(node => (node.style.cursor = "wait"));
+
+    setTimeout(() => {
+        gameDescription.textContent = `${enemy.name} is making a move`;
+        setTimeout(() => {
+            makeBotMove(enemy);
+            setTimeout(() => {
+                gameDescription.textContent = "It's your turn";
+                attackBoard.style.pointerEvents = "";
+                document
+                    .querySelectorAll("*")
+                    .forEach(node => (node.style.cursor = ""));
+            }, 1000);
+        }, 1500);
+    }, 1000);
+
+    // makeBotMove(enemy);
+
+    if (player.hasLost()) {
+        displayWinner(enemy.name);
+    } else if (enemy.hasLost()) {
+        displayWinner(player.name);
     }
 }
 
@@ -58,25 +117,7 @@ function createEnemyBoardUI(enemy, player) {
             cellContent.col = j;
 
             cellContent.onclick = () => {
-                const hit = player.attack(enemy, i, j);
-                if (hit) {
-                    cellContent.style.backgroundColor = "rgb(237, 142, 142)";
-                } else {
-                    const missIcon = document.createElement("p");
-                    missIcon.classList.add("miss-icon");
-                    missIcon.textContent = "·";
-
-                    cellContent.appendChild(missIcon);
-                }
-                cellContent.classList.add("isHit");
-
-                botMoveTest();
-
-                if (player.hasLost()) {
-                    displayWinner(enemy.name);
-                } else if (enemy.hasLost()) {
-                    displayWinner(player.name);
-                }
+                performAttack(cellContent, player, enemy);
             };
 
             cell.appendChild(cellContent);
